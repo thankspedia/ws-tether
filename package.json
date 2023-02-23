@@ -1,0 +1,13 @@
+{
+  "name": "async-context-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "callapi.js",
+  "scripts": {
+    "start-test": "node --inspect -e \"require('async-context-backend' ).startService() \"",
+    "test-b": "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
+    "test": "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --"
+  },
+  "author": "",
+  "license": "ISC"
+}
