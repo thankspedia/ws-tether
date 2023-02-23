@@ -1,0 +1,16 @@
+{
+  "crypto_web_token" : {
+    "tokenizer_password" : "helloworldfoobarbazs",
+    "end": true
+  },
+  "coretbc_context" : {
+    "context_factory" :"./middleware-test-context-factory",
+    "static_paths":[],
+    "ports": [ 2003 ],
+    "cors_origins" : [
+      "http://localhost:2003"
+    ],
+    "end": true
+  },
+  "end" : true
+}
