@@ -4,7 +4,7 @@
     "end": true
   },
   "async_context_backend" : {
-    "context_factory" :"async-context-backend/middleware-test-context-factory",
+    "context_factory" :"asynchronous-context-backend/middleware-test-context-factory",
     "static_paths":[],
     "ports": [ 2003 ],
     "cors_origins" : [
