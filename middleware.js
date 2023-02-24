@@ -1,12 +1,12 @@
 const express                = require( 'express' );
 const bodyParser             = require( 'body-parser' );
 const url                    = require( 'url' );
-const { AsyncContextResult } = require( 'async-context/result' );
+const { AsyncContextResult } = require( 'asynchronous-context/result' );
 const { get_typesafe_tags }  = require( 'runtime-typesafety' );
-const { 
+const {
   preventUndefined,
-  unprevent, 
-  recursivelyUnprevent 
+  unprevent,
+  recursivelyUnprevent
 } = require( 'prevent-undefined' );
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
@@ -88,13 +88,13 @@ module.exports.METHOD_PATCH    = METHOD_PATCH;
  *   path: '/',
  *   href: 'http://localhost:3000/'
  * }
- *  
+ *
  *  See : https://developer.mozilla.org/en-US/docs/Web/API/URL/pathname
  *  > URLs such as https and http URLs that have hierarchical schemes (which
  *  > the URL standard calls "special schemes") always have at least one
  *  > (invisible) path segment: the empty string. Thus the pathname value for
  *  > such "special scheme" URLs can never be the empty string, but will
- *  > instead always have a least one / character. 
+ *  > instead always have a least one / character.
  *
  *  > For example, the URL https: //developer.mozilla.org has just one path
  *  > segment: the empty string, so its pathname value is constructed by
@@ -144,7 +144,7 @@ function resolve_method( method, context, path_elements ) {
       } else {
         return {
           status_code : 403, // see the CONDITION_ABOVE
-          value       : null, 
+          value       : null,
           tags        : tags,
           valid_prop_name_list : [ ...accumlator.valid_prop_name_list, prop_name ],
         };
@@ -225,7 +225,7 @@ function __create_middleware( contextFactory ) {
         // This should not be executed since the number of the set of elements
         // will never lower than two.
         if ( path_elements.length === 0 ) {
-          res.status(404).json({status:'error', reason : 'not found' } ).end(); 
+          res.status(404).json({status:'error', reason : 'not found' } ).end();
           (async()=>{
             console.log(LOG_PREFIX,'http result:', 404 );
           })().catch(e=>console.error(MSG_UNCAUGHT_ERROR,e) );
@@ -266,7 +266,7 @@ function __create_middleware( contextFactory ) {
             reason : 'Not Found',
             ...session_info,
           };
-          res.status(404).json({status:'error_occured_in_method_invocation', ...result }).end(); 
+          res.status(404).json({status:'error_occured_in_method_invocation', ...result }).end();
           context.logger.output(  {type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
             console.log(LOG_PREFIX,'http result:', 404 );
@@ -282,7 +282,7 @@ function __create_middleware( contextFactory ) {
             reason : 'Forbidden',
             ...session_info,
           };
-          res.status(403).json({ status:'error_occured_in_method_invocation', ...result }).end(); 
+          res.status(403).json({ status:'error_occured_in_method_invocation', ...result }).end();
           context.logger.output(  { type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
             console.log( LOG_PREFIX, 'request_prop_name'  , request_prop_name );
@@ -301,7 +301,7 @@ function __create_middleware( contextFactory ) {
             status_code,
             ...session_info,
           };
-          res.status(status_code).json({ status:'error_occured_in_method_invocation', ...result }).end(); 
+          res.status(status_code).json({ status:'error_occured_in_method_invocation', ...result }).end();
           context.logger.output(       { type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
             console.log( LOG_PREFIX, 'request_prop_name'  , request_prop_name );
@@ -315,11 +315,11 @@ function __create_middleware( contextFactory ) {
 
         const resolved_method = resolved.value;
 
-        if ( 
+        if (
           ( typeof resolved_method !== 'function')  ||
-          ( resolved_method.constructor.name !== 'AsyncFunction' ) 
+          ( resolved_method.constructor.name !== 'AsyncFunction' )
         ) {
-          res.status(403).json( {status:'error_occured_in_method_invocation', reason : 'Forbidden' } ).end(); 
+          res.status(403).json( {status:'error_occured_in_method_invocation', reason : 'Forbidden' } ).end();
           context.logger.output({type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
             console.log( LOG_PREFIX, 'request_prop_name'  , request_prop_name );
@@ -388,10 +388,10 @@ function __create_middleware( contextFactory ) {
                 contextResult.value ))).end();
           done = true;
         } else {
-          res.status(500).json( 
-            recursivelyUnprevent( 
+          res.status(500).json(
+            recursivelyUnprevent(
               AsyncContextResult.createErroneous(
-              contextResult.value ))).end(); 
+              contextResult.value ))).end();
           done = true;
         }
 
@@ -411,7 +411,7 @@ function __create_middleware( contextFactory ) {
 
         try {
           if ( ! done ) {
-            res.status(500).json( asyncContestResult ).end(); 
+            res.status(500).json( asyncContestResult ).end();
             done=true;
           }
         } catch ( e ) {
@@ -478,7 +478,7 @@ function create_middleware( contextFactory ) {
   router.all( '/(.*)', __create_middleware( contextFactory ) );
   router.all( '(.*)', function ( req, res, next ) {
     // console.trace('(.*)');
-    res.status(404).json({status:'error', reason : 'not found' } ).end(); 
+    res.status(404).json({status:'error', reason : 'not found' } ).end();
   });
   return router;
 }

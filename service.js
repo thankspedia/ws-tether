@@ -4,7 +4,7 @@ const path       = require( 'path' );
 const process    = require( 'process' );
 const express = require('express');
 const cors       = require( 'cors' );
-const { settingFile, asyncReadSettings } = require( 'async-context/settings' );
+const { settingFile, asyncReadSettings } = require( 'asynchronous-context/settings' );
 const { schema } = require( 'vanilla-schema-validator' );
 require( './schema' ).init( schema );
 require( 'authentication-context/schema' ).init( schema );
@@ -39,7 +39,7 @@ function createContextFactory( packageName, doPurgeRequireCache = false ) {
         return require( packageName ).createContext();
       }
     );
-  } else { 
+  } else {
     return (
       async function() {
         // purgeRequireCache();
@@ -74,10 +74,10 @@ function createService( serviceSettings ) {
 
   app.use( cors( { origin : cors_origins } ) );
 
-  app.use( '/api',  require( './middleware' ).create( createContextFactory( context_factory, false ))); 
+  app.use( '/api',  require( './middleware' ).create( createContextFactory( context_factory, false )));
   app.use( '/blank', (req,res,next)=>{
     res.json({status:'succeeded', value:'blank' }).end();
-  }); 
+  });
 
   for ( let i of static_paths  ) {
     app.use( express.static( i ) );
@@ -87,7 +87,7 @@ function createService( serviceSettings ) {
 
   for ( let i of ports ) {
     servers.push( app.listen(i, () => {
-      console.log( `[async-context-backend] an instance of async-context-web is listening at http://localhost:${i}` );
+      console.log( `[asynchronous-context-backend] an instance of asynchronous-context-web is listening at http://localhost:${i}` );
     }));
   }
 
@@ -109,12 +109,12 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
 
   // throttling the file change events.
   {
-    console.log(`[async-context-backend] watching for file changes on ${path.resolve( watchingFile)}`);
+    console.log(`[asynchronous-context-backend] watching for file changes on ${path.resolve( watchingFile)}`);
 
     fs.watch( watchingFile, (event, filename)=>{
       // console.log({ event, filename } );
       if (filename && event ==='change') {
-        // console.log(`[async-context-backend] ${filename} file Changed`);
+        // console.log(`[asynchronous-context-backend] ${filename} file Changed`);
         __filename = filename;
         modifiedTime = new Date();
         processed = true;
@@ -127,13 +127,13 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
       try {
         const now = new Date().getTime();
         if ( processed && ( 101 < (now - modifiedTime) ) ) {
-          console.log(`[async-context-backend] ${__filename} file Changed`);
+          console.log(`[asynchronous-context-backend] ${__filename} file Changed`);
           processed = false;
           // `onDetected` function can be either async or non-async.
           await onDetected();
         }
       } catch (e) {
-        console.error( '[async-context-backend] could not start specified services : ',e);
+        console.error( '[asynchronous-context-backend] could not start specified services : ',e);
       }
     },100);
   }
@@ -165,7 +165,7 @@ function startService( serviceSettings = readServiceSettings ) {
   let serviceHandleStack = [];
 
   const restartService = async ()=>{
-    console.log( '[async-context-backend] a watchdog detected updating file... restarting the server.' );
+    console.log( '[asynchronous-context-backend] a watchdog detected updating file... restarting the server.' );
     serviceHandleStack.forEach( e=>e.shutdown() );
     serviceHandleStack.length = 0;
 
