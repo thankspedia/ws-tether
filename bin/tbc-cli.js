@@ -1,5 +1,7 @@
 #!/bin/env node
 
+const { shutdownDatabaseContext } = require( 'database-postgresql-context' );
+
 function createContext() {
   return require( 'coretbc/context' ).createContext( 'tBC-CLI' ).setOptions({autoCommit:false, showReport:true});
 }
@@ -29,14 +31,14 @@ async function execute () {
       let  f = argv[0];
       try {
         const ff = require('path').join( require( 'process' ).cwd() , f );
-        require.resolve(ff) 
+        require.resolve(ff)
         f = ff;
-      } catch (e){ 
+      } catch (e){
         // f = require('path').join( require( 'process' ).cwd() , f );
       }
       await tbc( require( f ) );
     } finally {
-      require( 'database-postgresql-context' ).DatabaseContext.shutdownPool();
+      shutdownDatabaseContext();
     }
   }
 }
