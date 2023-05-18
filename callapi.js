@@ -15,9 +15,29 @@ function createErrorContext({ server_url, authentication_token, error_message })
 module.exports.createErrorContext = createErrorContext;
 
 
+function create_overrider( args ) {
+  return function created_overrider( args_to_override ) {
+    const overriden_args = {
+      ...args,
+    };
+
+    // Don't let them override fields other than 'method'.
+    if ( args_to_override.method ) {
+      if ( typeof args_to_override.method === 'string' ) {
+        overriden_args.method = args_to_override.method;
+      } else {
+        throw new Error( `the named argument 'method' must be a string` );
+      }
+    }
+
+    return create_remote_context( overriden_args );
+  };
+}
+
 function create_remote_context( nargs ) {
   // console.log( nargs );
   const {
+    method               = 'POST',
     callapi              = standard_callapi,
     server_url           = (()=>{throw new Error( 'server_url must be specified' )})(),
     authentication_token = (()=>{throw new Error( 'authentication_token must be specified' )})(),
@@ -26,10 +46,10 @@ function create_remote_context( nargs ) {
 
   return new Proxy(()=>{}, {
     async apply( target, thisArg, args ) {
-      const result = await callapi( 
-        'POST', 
-        server_url, 
-        path.join('/'), 
+      const result = await callapi(
+        method,
+        server_url,
+        path.join('/'),
         authentication_token,
         ...args
       );
@@ -51,19 +71,27 @@ function create_remote_context( nargs ) {
     },
 
     get(target, prop, receiver) {
-      return create_remote_context({
+      const args = {
+        method,
         callapi,
         server_url,
         authentication_token,
-        path : [ ...path, prop ],
-      });
+        path : [ ...path ],
+      };
+
+      if ( prop === 'REQUEST' ) {
+        return create_overrider( args );
+      } else {
+        args.path = [ ...args.path, prop ];
+        return create_remote_context( args );
+      }
     }
   });
 }
 
 
 
-function process_args( args ) {
+function process_args_v1( args ) {
   // const __convert =  e=> typeof e === 'string' ? e : JSON.stringify( e );
 
   /*
@@ -82,6 +110,14 @@ function process_args( args ) {
   }
 }
 
+// MODIFIED (Thu, 18 May 2023 17:45:04 +0900)
+// always return array.
+function process_args_v2( args ) {
+  return [ ...args ];
+};
+
+const process_args = process_args_v2;
+
 function parse_response( text ) {
   try {
     return JSON.parse( text );
@@ -94,6 +130,26 @@ function parse_response( text ) {
       },
     };
   }
+}
+
+const concat_url = (server_url, path, query )=>{
+  let s = '';
+
+  s += server_url;
+
+  if ( ! s.endsWith( '/' ) && ! path.startsWith('/')  ) {
+    s+= '/';
+  }
+
+  s += path;
+
+  if ( ! s.endsWith( '?' ) && ! path.startsWith( '?' )  ) {
+    s += '?';
+  }
+
+  s += query;
+
+  return s;
 }
 
 
@@ -111,10 +167,32 @@ async function standard_callapi( method, server_url, path, authentication_token,
     }
   }
 
-  const body           = JSON.stringify( process_args( args ), null, 4 );
-  // console.log('body', body );
-  const options        = { method, headers, body };
-  const result         = await fetch( server_url + path , options );
+  const create_options_and_query = ()=>{
+    if ( method === 'HEAD' || method === 'GET' ) {
+      const options        = { method, headers };
+      const query_obj = new URLSearchParams( (args.lenght === 0) || (typeof args[0] !== 'object') ? {} : args[0] );
+      query_obj.sort();
+      const query = query_obj.toString();
+      return {
+        options,
+        query,
+      };
+    } else {
+      const body = JSON.stringify( process_args( args ), null, 4 );
+      const options        = { method, headers, body };
+      const query = '';
+      return {
+        options,
+        query,
+      };
+    }
+  };
+
+  const {
+    options, query
+  } = create_options_and_query();
+
+  const result         = await fetch( concat_url( server_url , path , query ) , options );
   const response_text  = await result.text();
   // console.log( 'respoinse_text',  response_text );
   const response_json  = parse_response( response_text );
