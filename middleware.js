@@ -194,6 +194,12 @@ function parse_request_body( text_request_body ) {
   }
 }
 
+function parse_query_parameter( query ) {
+  const p = new URLSearchParams( query );
+  p.sort();
+  return [ Object.fromEntries( p.entries() ) ];
+}
+
 
 function __create_middleware( contextFactory ) {
   // the arguments are already validated in `create_middleware` function.
@@ -240,7 +246,7 @@ function __create_middleware( contextFactory ) {
         const resolved            = resolve_method( req.method, context, path_elements );
         const request_prop_name   = resolved.prop_name_list.join( '.' );
         const available_prop_name = resolved.valid_prop_name_list.join('.');
-        const json_request_body   = parse_request_body( req.body );
+        const json_request_body   = ( req.method === 'GET' || req.method === 'HEAD' ) ? parse_query_parameter( urlobj.query ) : parse_request_body( req.body );
 
         session_info = {
           request_prop_name,
@@ -363,12 +369,22 @@ function __create_middleware( contextFactory ) {
         }
 
         try {
-          // 5) Execute the method.
-          if ( Array.isArray( json_request_body  ) ) {
-            contextResult.value = await (context.executeTransaction( resolved_method, ... json_request_body ));
-          } else {
-            contextResult.value = await (context.executeTransaction( resolved_method,     json_request_body ));
-          }
+
+          /*
+           * Now the frontend client always returns arrays.
+           * See asynchronous-context-frontend.
+           * (Thu, 18 May 2023 17:45:04 +0900)
+           */
+          // >>> MODIFIED (Thu, 18 May 2023 17:45:04 +0900)
+          // // 5) Execute the method.
+          // if ( Array.isArray( json_request_body  ) ) {
+          //   contextResult.value = await (context.executeTransaction( resolved_method, ... json_request_body ));
+          // } else {
+          //   contextResult.value = await (context.executeTransaction( resolved_method,     json_request_body ));
+          // }
+          // <<< MODIFIED (Thu, 18 May 2023 17:45:04 +0900)
+
+          contextResult.value = await (context.executeTransaction( resolved_method, ... json_request_body ));
 
           contextResult.is_successful = true;
         } catch ( e ) {
