@@ -52,7 +52,7 @@ function createContextFactoryFromSettings( settings ) {
   const context_factory     = settings?.async_context_backend?.context_factory ?? null;
   const purge_require_cache = settings?.async_context_backend?.purge_require_cache ?? false;
 
-  console.log( 'context_factory : ', context_factory );
+  // console.log( 'context_factory : ', context_factory );
 
   return createContextFactory( context_factory, purge_require_cache );
 }
@@ -180,7 +180,7 @@ module.exports.startService = startService;
 
 async function asyncReadBackendSettings() {
   const settings = (await asyncReadSettings( schema.t_async_context_service_settings() )) ?? {};
-  if ( settings?.async_context_backend?.ports.length ?? 0 < 1 ) {
+  if ( ( settings?.async_context_backend?.ports?.length ?? 0) < 1 ) {
     console.error( `WARNING field 'ports' is missing in the setting file '${settingFile}' the default values are applied.` );
   }
   return settings;
