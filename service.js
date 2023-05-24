@@ -12,55 +12,66 @@ require( 'authentication-context/schema' ).init( schema );
 const DEBUG = false;
 
 function purgeRequireCache() {
-  // BE AWARE!!!
-  // DISABLED (Thu, 12 Jan 2023 13:44:41 +0900)
-  // BE AWARE!!!
-  return ;
-
   Object.entries( require.cache ).map( ([key,value])=>{
     delete require.cache[ key ];
   });
 }
 
-function default_cors_origins( origin, callback ) {
-  console.error( 'WARNING : NO CORS SETTING FILE WAS SPECIFIED. THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
-  callback( null, /.*/ )
-}
-
-function createContextFactory( packageName, doPurgeRequireCache = false ) {
-  if ( typeof packageName  !== 'string' || packageName.trim().length === 0 ) {
-    throw new Error( `package name was not specified : '$( packageName )' which type is '$(typeof packageName )'` );
+function createContextFactory( /* the package name of */ context_factory, purge_require_cache ) {
+  if ( typeof context_factory  !== 'string' || context_factory.trim().length === 0 ) {
+    throw new Error( `package name is invalid : the specified value '${ context_factory }' is '${typeof context_factory }'` );
   }
 
-  if ( doPurgeRequireCache ) {
+  if ( typeof purge_require_cache  !== 'boolean' ) {
+    throw new Error( `purge_require_cache is invalid : the specified value '${ purge_require_cache }' is '${typeof purge_require_cache }'` );
+  }
+
+  if ( purge_require_cache ) {
     return (
       async function() {
         purgeRequireCache();
-        return require( packageName ).createContext();
+
+        // always get fresh, and the latest createContext() function
+        return require( context_factory ).createContext();
       }
     );
   } else {
     return (
       async function() {
         // purgeRequireCache();
-        return require( packageName ).createContext();
+
+        // always get fresh, and the latest createContext() function
+        return require( context_factory ).createContext();
       }
     );
   }
 }
+module.exports.createContextFactory = createContextFactory;
+
+function createContextFactoryFromSettings( settings ) {
+  const context_factory     = settings?.async_context_backend?.context_factory ?? null;
+  const purge_require_cache = settings?.async_context_backend?.purge_require_cache ?? false;
+
+  console.log( 'context_factory : ', context_factory );
+
+  return createContextFactory( context_factory, purge_require_cache );
+}
+module.exports.createContextFactoryFromSettings = createContextFactoryFromSettings;
 
 
+function default_cors_origins( origin, callback ) {
+  console.error( 'WARNING : NO CORS SETTING FILE WAS SPECIFIED. THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
+  callback( null, /.*/ )
+}
 
-function createService( serviceSettings ) {
-  if( DEBUG ) console.log( 'serviceSettings', serviceSettings );
+function createService( settings ) {
+  if( DEBUG ) console.log( 'settings', settings );
+
   const {
-    context_factory = (()=>{ throw new ReferenceError( "`contextFactory` must be specified" )})(),
-    static_paths    = [ require.main.path+'/public' ],
-    ports           = [2000],
+    static_paths    = [ require.main.path + '/public' ],
+    ports           = [ 2000 ],
     cors_origins    = default_cors_origins,
-  } = serviceSettings;
-
-  if (DEBUG) console.log( 'context_factory', context_factory );
+  } = settings?.async_context_backend ?? {};
 
 
   // Initializing the app.
@@ -74,7 +85,7 @@ function createService( serviceSettings ) {
 
   app.use( cors( { origin : cors_origins } ) );
 
-  app.use( '/api',  require( './middleware' ).create( createContextFactory( context_factory, false )));
+  app.use( '/api',  require( './middleware' ).create( createContextFactoryFromSettings( settings )));
   app.use( '/blank', (req,res,next)=>{
     res.json({status:'succeeded', value:'blank' }).end();
   });
@@ -139,73 +150,54 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
   }
 }
 
-function startService( serviceSettings = readServiceSettings ) {
+function startService( asyncReadSettings = asyncReadBackendSettings ) {
   process.on( 'unhandledRejection', (reason, p) =>{
     console.error( '***Unhandled Rejection at Promise***','reason:', reason, 'promise:', p);
   });
 
-  const __serviceSettings = (()=>{
-    if ( typeof serviceSettings === 'function' ) {
-      return serviceSettings;
-    } else if ( typeof serviceSettings === 'string' ) {
-      try {
-        const serviceSettingsJSON = JSON.parse( serviceSettings );
-        return async ()=>serviceSettingsJSON;
-      } catch ( e ) {
-        throw new TypeError( 'serviceSettings must be either a JSON string, a function or an object', {cause : e } );
-      }
-    } else if ( typeof serviceSettings === 'object' ) {
-      return async ()=>serviceSettings;
-    } else {
-      throw new TypeError( 'serviceSettings must be either a JSON string, a function or an object' );
-    }
-  })();
-
-
   let serviceHandleStack = [];
 
-  const restartService = async ()=>{
+  const asyncRestartServices = async ()=>{
     console.log( '[asynchronous-context-backend] a watchdog detected updating file... restarting the server.' );
     serviceHandleStack.forEach( e=>e.shutdown() );
     serviceHandleStack.length = 0;
 
-    purgeRequireCache();
+    // `purgeRequireCache()` WAS DISABLED ON (Thu, 12 Jan 2023 13:44:41 +0900)
+    // Now it was re-enabled, then now the caller of the function is disabled here.
+    // >>> COMMENTED OUT (Wed, 24 May 2023 11:40:54 +0900)
+    // purgeRequireCache();
+    // <<< COMMENTED OUT (Wed, 24 May 2023 11:40:54 +0900)
 
     serviceHandleStack.push(
-      createService( await __serviceSettings() )
+      createService( await asyncReadSettings() )
     );
   };
 
-  startFileSytemWatchdog( restartService, './' );
+  startFileSytemWatchdog( asyncRestartServices, './' );
 }
 module.exports.startService = startService;
 
-async function __readServiceSettings() {
-  const json = (await asyncReadSettings( schema.t_async_context_service_settings() )).async_context_backend;
-  if ( json.ports.length < 1 ) {
+
+async function asyncReadBackendSettings() {
+  const settings = (await asyncReadSettings( schema.t_async_context_service_settings() )) ?? {};
+  if ( settings?.async_context_backend?.ports.length ?? 0 < 1 ) {
     console.error( `WARNING field 'ports' is missing in the setting file '${settingFile}' the default values are applied.` );
   }
-  return json;
-}
+  return settings;
 
-async function readServiceSettings() {
-  try {
-    const json = await __readServiceSettings();
-    return (
-      {
-        context_factory  : json.context_factory,
-        ports            : json.ports,
-        static_paths     : json.static_paths,
-        cors_origins     : json.cors_origins,
-      }
-    );
-  } catch (err) {
-    throw err;
-  }
+  // return (
+  //   {
+  //     context_factory  : settings?.async_context_backend?.context_factory,
+  //     ports            : settings?.async_context_backend?.ports,
+  //     static_paths     : settings?.async_context_backend?.static_paths,
+  //     cors_origins     : settings?.async_context_backend?.cors_origins,
+  //   }
+  // );
 }
+module.exports.asyncReadBackendSettings = asyncReadBackendSettings;
 
 if ( require.main === module ) {
-  startService( readServiceSettings );
+  startService( asyncReadBackendSettings );
 }
 
 
