@@ -1,13 +1,13 @@
 
 function createContext( nargs ) {
   const callapi = standard_callapi;
-  return create_callapi_wrapper( { ...nargs, http_method : 'POST', callapi });
+  return create_callapi_bridge( { ...nargs, http_method : 'POST', callapi });
 }
 module.exports.createContext = createContext;
 
 function createDummyContext( nargs ) {
   const callapi = dummy_callapi;
-  return create_callapi_wrapper({ ...nargs, callapi });
+  return create_callapi_bridge({ ...nargs, callapi });
 }
 module.exports.createDummyContext = createDummyContext;
 
@@ -16,7 +16,7 @@ function createErrorContext( nargs ) {
     throw new Error( 'error_message is not specified' );
   }
   const callapi = create_error_callapi( nargs.error_message );
-  return create_callapi_wrapper({ ...nargs, callapi });
+  return create_callapi_bridge({ ...nargs, callapi });
 }
 module.exports.createErrorContext = createErrorContext;
 
@@ -38,11 +38,11 @@ function create_callapi_overrider( args ) {
       throw new Error( 'this should not happen' );
     }
 
-    return create_callapi_wrapper( overriden_args );
+    return create_callapi_bridge( overriden_args );
   };
 }
 
-function create_callapi_wrapper( __nargs ) {
+function create_callapi_bridge( __nargs ) {
   // duplicate the object that contains the named arguments:
   const nargs = {
     ... __nargs,
@@ -98,7 +98,7 @@ function create_callapi_wrapper( __nargs ) {
           method_path : [ ...(nargs.method_path) ],
         });
       } else {
-        return create_callapi_wrapper({
+        return create_callapi_bridge({
           ...nargs,
           method_path : [ ...(nargs.method_path), prop ],
         });
@@ -177,7 +177,7 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
 // const http_method      = 'POST';
 
 /*
- * 1. Now `create_callapi_wrapper()` delegates all named arguments to `callapi` so
+ * 1. Now `create_callapi_bridge()` delegates all named arguments to `callapi` so
  * that `callapi()` can receive any named arguments
  *
  * 2. `standard_callapi` takes the following five arguments.
