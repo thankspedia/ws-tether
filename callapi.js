@@ -175,20 +175,25 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
 
 // const http_server_url  = http_server_url; // 'http://localhost:2000/api/';
 // const http_method      = 'POST';
+
 /*
+ * 1. Now `create_callapi_wrapper()` delegates all named arguments to `callapi` so
+ * that `callapi()` can receive any named arguments
  *
- * nargs : object(
- *   http_method               : and(
- *                                 string(),
- *                                 or(
- *                                   equals( << 'POST' >> ),
- *                                   equals( << 'GET'  >> ),
- *                                   equals( << 'GET' >>  ))),
- *   http_server_url           : string(),
- *   http_authentication_token : string(),
- *   method_path               : array_of( string() ),
- *   method_args               : array_of( any() ),
- * ),
+ * 2. `standard_callapi` takes the following five arguments.
+ *
+ *     nargs : object(
+ *       http_method               : and(
+ *                                     string(),
+ *                                     or(
+ *                                       equals( << 'POST' >> ),
+ *                                       equals( << 'GET'  >> ),
+ *                                       equals( << 'GET' >>  ))),
+ *       http_server_url           : string(),
+ *       http_authentication_token : string(),
+ *       method_path               : array_of( string() ),
+ *       method_args               : array_of( any() ),
+ *     ),
  */
 async function standard_callapi( nargs ) {
   const {
