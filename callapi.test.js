@@ -1,11 +1,16 @@
 
+require( 'dotenv' ).config();
+
+const assert = require( 'node:assert/strict' );
+const { test, describe, it, before, after }  = require( 'node:test' );
+
 const is_remote = true;
 function createContext() {
   if ( is_remote ) {
     return require( './callapi' ).createContext({
-      server_url           : 'http://localhost:2003/api/',
-      authentication_token : 'hello_authentication_token',
-      callapi              : require('./callapi' ).standard_callapi,
+      http_server_url           : 'http://localhost:2003/api/',
+      http_authentication_token : 'hello_authentication_token',
+      callapi                   : require('./callapi' ).standard_callapi,
     });
   } else {
     return require( 'asynchronous-context-backend/middleware-test-context-factory' ).createContext();
@@ -18,38 +23,42 @@ const __callapi =(...args)=>{
 };
 
 
-test('test1', async()=>{
-  debugger;
-  const context = createContext();
-  expect( await (context.hello_world( 'hello world !!' ))).toEqual( 'hello world !!' );
+describe( ()=>{
+  it('as test1', async()=>{
+    debugger;
+    const context = createContext();
+    assert.equal( await ( context.hello_world( 'hello world !!' ) ) , 'hello world !!' );
+  });
+
+  it('as test2', async()=>{
+    const context = createContext();
+    await (context.hello.world.foo.bar.baz('hello world'));
+  });
+
+  it('as test3', async()=>{
+    await assert.rejects((async()=>{
+      try {
+        const context = createContext();
+        await (context.hello2.world.foo.bar.baz({hello:'hello world'}));
+      } catch ( e ) {
+        console.log( 'expected exception', e );
+        throw new Error( 'error', { cause : e } );
+      }
+
+    }));
+  });
+
+  it('as test4', async()=>{
+    await assert.doesNotReject( async()=>{
+      try {
+        const context = createContext();
+        const result = await context.multiple(1,2,3,4);
+        assert.deepEqual( result, [1,2,3,4]);
+      } catch ( e ) {
+        console.error( 'unexpected exception', e );
+        throw new Error( 'error', { cause : e } );
+      }
+    });
+  });
+
 });
-
-test('test2', async()=>{
-  const context = createContext();
-  await (context.hello.world.foo.bar.baz('hello world'));
-});
-
-test('test3', async()=>{
-  await expect(async()=>{
-    try {
-      const context = createContext();
-      await (context.hello2.world.foo.bar.baz({hello:'hello world'}));
-    } catch ( e ) {
-      throw new Error( 'error', { cause : e } );
-    }
-
-  }).rejects.toThrow();
-});
-
-test('test4', async()=>{
-  await expect(( async()=>{
-    try {
-      const context = createContext();
-      return await context.multiple(1,2,3,4);
-    } catch ( e ) {
-      throw new Error( 'error', { cause : e } );
-    }
-
-  })()).resolves.toEqual( [1,2,3,4] );
-});
-
