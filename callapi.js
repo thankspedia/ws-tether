@@ -1,21 +1,27 @@
 
-function createContext({ http_server_url, http_authentication_token, callapi }) {
-  return create_remote_context({ http_server_url, http_authentication_token, callapi });
+function createContext( nargs ) {
+  const callapi = standard_callapi;
+  return create_callapi_wrapper( { ...nargs, http_method : 'POST', callapi });
 }
 module.exports.createContext = createContext;
 
-function createDummyContext({ http_server_url, http_authentication_token }) {
-  return create_remote_context({ http_server_url, http_authentication_token, callapi: dummy_callapi });
+function createDummyContext( nargs ) {
+  const callapi = dummy_callapi;
+  return create_callapi_wrapper({ ...nargs, callapi });
 }
 module.exports.createDummyContext = createDummyContext;
 
-function createErrorContext({ http_server_url, http_authentication_token, error_message }) {
-  return create_remote_context({ http_server_url, http_authentication_token, callapi : create_error_callapi( error_message ) });
+function createErrorContext( nargs ) {
+  if ( ! ( 'error_message' in  nargs ) ) {
+    throw new Error( 'error_message is not specified' );
+  }
+  const callapi = create_error_callapi( nargs.error_message );
+  return create_callapi_wrapper({ ...nargs, callapi });
 }
 module.exports.createErrorContext = createErrorContext;
 
 
-function create_overrider( args ) {
+function create_callapi_overrider( args ) {
   return function created_overrider( args_to_override ) {
     const overriden_args = {
       ...args,
@@ -32,29 +38,42 @@ function create_overrider( args ) {
       throw new Error( 'this should not happen' );
     }
 
-    return create_remote_context( overriden_args );
+    return create_callapi_wrapper( overriden_args );
   };
 }
 
-function create_remote_context( nargs ) {
-  // console.log( nargs );
-  const {
-    callapi                   = standard_callapi,
-    http_method               = 'POST',
-    http_server_url           = (()=>{throw new Error( 'http_server_url must be specified' )})(),
-    http_authentication_token = (()=>{throw new Error( 'http_authentication_token must be specified' )})(),
-    method_path               = [],
-  } = nargs;
+function create_callapi_wrapper( __nargs ) {
+  // duplicate the object that contains the named arguments:
+  const nargs = {
+    ... __nargs,
+  };
+
+  // check the specified named arguments:
+  if ( ! ( 'callapi' in nargs ) ) {
+    throw new Error( 'callapi is not specified' );
+  }
+  if ( ! ( 'method_path' in nargs  ) ) {
+    nargs.method_path = [];
+  }
+
+
+  // // console.log( nargs );
+  // const {
+  //   callapi                   = standard_callapi,
+  //   method_path               = [],
+  //   http_method               = 'POST',
+  //   http_server_url           = (()=>{throw new Error( 'http_server_url must be specified' )})(),
+  //   http_authentication_token = (()=>{throw new Error( 'http_authentication_token must be specified' )})(),
+  // } = nargs;
 
   return new Proxy(()=>{}, {
     async apply( target, thisArg, args ) {
-      const result = await callapi(
-        http_method,
-        http_server_url,
-        http_authentication_token,
-        method_path,
-        ...args
-      );
+
+      const result = await nargs.callapi({
+        ...nargs,
+        method_path : [ ...nargs.method_path ],
+        method_args : [ ... args             ],
+      });
 
       if ( 'status' in result ) {
         if ( result.status === 'error' ) {
@@ -73,19 +92,16 @@ function create_remote_context( nargs ) {
     },
 
     get(target, prop, receiver) {
-      const args = {
-        callapi,
-        http_method,
-        http_server_url,
-        http_authentication_token,
-        method_path : [ ...method_path ],
-      };
-
       if ( prop === 'OVERRIDE' ) {
-        return create_overrider( args );
+        return rreate_callapi_overrider({
+          ...nargs,
+          method_path : [ ...(nargs.method_path) ],
+        });
       } else {
-        args.method_path = [ ...args.method_path, prop ];
-        return create_remote_context( args );
+        return create_callapi_wrapper({
+          ...nargs,
+          method_path : [ ...(nargs.method_path), prop ],
+        });
       }
     }
   });
@@ -159,15 +175,38 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
 
 // const http_server_url  = http_server_url; // 'http://localhost:2000/api/';
 // const http_method      = 'POST';
-async function standard_callapi( http_method, http_server_url, http_authentication_token, method_path,  ...method_args ) {
+/*
+ *
+ * nargs : object(
+ *   http_method               : and(
+ *                                 string(),
+ *                                 or(
+ *                                   equals( << 'POST' >> ),
+ *                                   equals( << 'GET'  >> ),
+ *                                   equals( << 'GET' >>  ))),
+ *   http_server_url           : string(),
+ *   http_authentication_token : string(),
+ *   method_path               : array_of( string() ),
+ *   method_args               : array_of( any() ),
+ * ),
+ */
+async function standard_callapi( nargs ) {
+  const {
+    http_method                = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_method'   ),
+    http_server_url            = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_server_url' ),
+    http_authentication_token  = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_authentication_token' ),
+    method_path                = ((v)=>{ throw new Error(`${v} is not specified`) })( 'method_path' ),
+    method_args                = ((v)=>{ throw new Error(`${v} is not specified`) })( 'method_args' ),
+  } = nargs;
+
   const http_headers = {
     'Content-Type': 'application/json',
   };
 
   if ( typeof http_authentication_token === 'string' ) {
-    http_authentication_token = http_authentication_token.trim();
-    if ( 0<http_authentication_token.length ) {
-      http_headers['Authentication'] = 'Bearer ' + http_authentication_token;
+    const tmp_token = http_authentication_token.trim();
+    if ( 0 < tmp_token.length ) {
+      http_headers['Authentication'] = 'Bearer ' + tmp_token;
     }
   }
 
@@ -220,8 +259,11 @@ async function standard_callapi( http_method, http_server_url, http_authenticati
   }
 }
 
-const dummy_callapi = ( http_method, http_server_url, http_authentication_token, method_path, ...method_args)=>{
-  console.log( 'callapi', ...method_args );
+const dummy_callapi = (nargs)=>{
+  const {
+    method_args = [],
+  } = nargs;
+  console.log( 'callapi', '(', ...method_args , ')', nargs );
   return {
     status : 'succeeded',
     value : method_args
@@ -232,8 +274,13 @@ function create_error_callapi( message ) {
   if ( typeof message !== 'string' ) {
     throw new TypeError( `an invalid value was specified as message argument; '${message}' ` );
   }
-  return ( http_method, http_server_url, http_authentication_token, method_path, ...method_args )=>{
-    console.error( 'error callapi', ...method_args );
+
+  return ( nargs )=>{
+    const {
+      method_args = [],
+    } = nargs;
+    console.log( 'callapi', '(', ...method_args , ')', nargs );
+
     return {
       status : 'error',
       value : message,
