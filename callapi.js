@@ -192,5 +192,6 @@ module.exports.standard_callapi = standard_callapi;
 module.exports.dummy_callapi    = dummy_callapi;
 module.exports.error_callapi    = error_callapi;
 module.exports.callapi          = standard_callapi;
+module.exports.create_error_callapi = create_error_callapi;
 
 
