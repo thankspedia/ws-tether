@@ -101,30 +101,28 @@ module.exports.METHOD_PATCH    = METHOD_PATCH;
  *  > prefixing a / character to the empty string.
  */
 
-function split_url_path( urlobj ) {
-  const path_elements = urlobj.pathname.split( '/' );
+function split_pathname_to_callapi_method_path( urlobj ) {
+  const method_path = urlobj.pathname.split( '/' );
   // See the comment above.
-  if ( path_elements[0] === '' ) {
-    path_elements.shift();
+  if ( method_path[0] === '' ) {
+    method_path.shift();
   }
-  return path_elements;
+  return method_path;
 }
 
 const LOG_PREFIX = 'middleware-context' ;
 
 const MSG_UNCAUGHT_ERROR = '********************* an uncaught error was detected ***************************\n';
 
-function resolve_method( method, context, path_elements ) {
-  const prop_name_list = [ ...path_elements ].map( filter_property_name );
-
+function resolve_callapi_method_path( callapi_target, callapi_method_path, required_typesafe_tags ) {
   const accumlator = {
     status_code          : 200,
-    value                : context,
+    value                : callapi_target,
     tags                 : [],
-    valid_prop_name_list : [],
+    actual_method_path   : [], // was valid_prop_name_list (Fri, 02 Jun 2023 13:12:29 +0900)
   };
 
-  const result = prop_name_list.reduce((accumlator,prop_name)=>{
+  const result = callapi_method_path.reduce((accumlator,prop_name)=>{
     if ( prop_name === undefined || prop_name === null ) {
       throw new ReferenceError( `internal error; prop_name value should not be undefined or null ${prop_name}` );
     } else if ( accumlator.status_code !== 200 ) {
@@ -134,19 +132,19 @@ function resolve_method( method, context, path_elements ) {
       const next_value = accumlator.value[prop_name];
       const tags       = next_value ? ( get_typesafe_tags( next_value ) ?? [] ) : [];
 
-      if ( tags.includes( method ) ) {
+      if ( tags.includes( required_typesafe_tags ) ) {
         return {
           status_code : 200,
           value       : next_value,
           tags        : tags,
-          valid_prop_name_list : [ ...accumlator.valid_prop_name_list, prop_name ],
+          actual_method_path   : [ ...accumlator.actual_method_path  , prop_name ],
         };
       } else {
         return {
           status_code : 403, // see the CONDITION_ABOVE
           value       : null,
           tags        : tags,
-          valid_prop_name_list : [ ...accumlator.valid_prop_name_list, prop_name ],
+          actual_method_path   : [ ...accumlator.actual_method_path  , prop_name ],
         };
       }
     } else {
@@ -154,15 +152,13 @@ function resolve_method( method, context, path_elements ) {
         status_code : 404, // see the CONDITION_ABOVE
         value       : null,
         tags        : [],
-        valid_prop_name_list : accumlator.valid_prop_name_list,
+        actual_method_path   : accumlator.actual_method_path  ,
       };
     }
   }, accumlator );
 
   return {
     ...result,
-    method,
-    prop_name_list,
   };
 }
 
@@ -207,11 +203,11 @@ function __create_middleware( contextFactory ) {
   return (
     async function (req, res, next) {
       // console.log( LOG_PREFIX, 'middleware(.*)'  );
-      // console.log( LOG_PREFIX, 'method',  req.method );
-      // console.log( LOG_PREFIX, 'body',    req.body );
-      // console.log( LOG_PREFIX, 'url',     req.url );
-      // console.log( LOG_PREFIX, 'baseurl', req.baseUrl );
-      // console.log( LOG_PREFIX, req.body.name );
+      // console.log( LOG_PREFIX, 'http_method',  req.method );
+      // console.log( LOG_PREFIX, 'body',         req.body );
+      // console.log( LOG_PREFIX, 'url',          req.url );
+      // console.log( LOG_PREFIX, 'baseurl',      req.baseUrl );
+      // console.log( LOG_PREFIX,                 req.body.name );
 
       let done    = false;
       let context = null;
@@ -222,15 +218,16 @@ function __create_middleware( contextFactory ) {
 
       let __session_info = null;
 
-      const urlobj        = url.parse( req.url, true );
-      const path_elements = split_url_path( urlobj );
+      const urlobj      = url.parse( req.url, true );
+      const callapi_method_path =
+        split_pathname_to_callapi_method_path( urlobj ).map( filter_property_name );
 
       try {
 
         // 1) Check if the current path is the root path.
         // This should not be executed since the number of the set of elements
         // will never lower than two.
-        if ( path_elements.length === 0 ) {
+        if ( callapi_method_path.length === 0 ) {
           res.status(404).json({status:'error', reason : 'not found' } ).end();
           (async()=>{
             console.log(LOG_PREFIX,'http result:', 404 );
@@ -243,19 +240,20 @@ function __create_middleware( contextFactory ) {
         // Create a context object.
         context = await contextFactory({});
 
-        const resolved            = resolve_method( req.method, context, path_elements );
-        const request_prop_name   = resolved.prop_name_list.join( '.' );
-        const available_prop_name = resolved.valid_prop_name_list.join('.');
-        const json_request_body   = ( req.method === 'GET' || req.method === 'HEAD' ) ? parse_query_parameter( urlobj.query ) : parse_request_body( req.body );
+        const resolved_callapi_method = resolve_callapi_method_path( context, callapi_method_path, req.method /* http-method as TAGS */ );
+
+        const target_method           = resolved_callapi_method.value;
+        const target_method_args      = ( req.method === 'GET' || req.method === 'HEAD' ) ? parse_query_parameter( urlobj.query ) : parse_request_body( req.body );
 
         session_info = {
-          request_prop_name,
-          available_prop_name,
-          available_request_method : resolved.tags,
-          url_path                 : urlobj.pathname,
-          url_query                : { ...urlobj.query },
-          request_method           : req.method,
-          request_body             : json_request_body,
+          callapi_method_path          : callapi_method_path.join( '.' ), // request_prop_name
+          callapi_actual_method_path   : resolved_callapi_method.actual_method_path.join('.'),
+          callapi_actual_method_tags   : resolved_callapi_method.tags,
+          http_pathname                : urlobj.pathname,
+          http_query_parameter         : { ...urlobj.query },
+          http_request_method          : req.method,
+          target_method                : target_method,
+          target_method_args           : target_method_args,
         };
 
         __session_info = {
@@ -267,13 +265,20 @@ function __create_middleware( contextFactory ) {
           ...session_info,
         });
 
-        if ( resolved.status_code === 404 ) {
+        if ( resolved_callapi_method.status_code === 404 ) {
+
           const result = {
             reason : 'Not Found',
-            ...session_info,
+            status_code : 404,
+            info : {
+              ...session_info,
+            },
           };
-          res.status(404).json({status:'error_occured_in_method_invocation', ...result }).end();
+
+          res.status(404).json( { status:'error',  value : { ...result }}).end();
+
           context.logger.output(  {type  :'error_occured_in_method_invocation', ...result });
+
           (async()=>{
             console.log(LOG_PREFIX,'http result:', 404 );
           })().catch(e=>console.error(MSG_UNCAUGHT_ERROR,e) );
@@ -283,15 +288,18 @@ function __create_middleware( contextFactory ) {
         }
 
         // 3) Check if the specified request method is allowed for the method.
-        if ( resolved.status_code === 403 ) {
+        if ( resolved_callapi_method.status_code === 403 ) {
           const result = {
             reason : 'Forbidden',
-            ...session_info,
+            status_code: 403,
+            info : {
+              ...session_info,
+            },
           };
-          res.status(403).json({ status:'error_occured_in_method_invocation', ...result }).end();
+          res.status(403).json({ status:'error', value: {...result}}).end();
           context.logger.output(  { type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
-            console.log( LOG_PREFIX, 'request_prop_name'  , request_prop_name );
+            console.log( LOG_PREFIX, 'callapi_method_path'  , session_info.callapi_method_path );
             console.log( LOG_PREFIX, 'http result:', 403 );
           })().catch(e=>console.error(MSG_UNCAUGHT_ERROR,e) );;
           done = true;
@@ -300,17 +308,19 @@ function __create_middleware( contextFactory ) {
         }
 
         // 4) status_code must be 200 in here
-        if ( resolved.status_code !== 200 ) {
-          const status_code = typeof resolved.status_code === 'number' ? solved.status_code : 500;
+        if ( resolved_callapi_method.status_code !== 200 ) {
+          const status_code = typeof resolved_callapi_method.status_code === 'number' ? solved.status_code : 500;
           const result = {
             reason : 'Server Error',
             status_code,
-            ...session_info,
+            info : {
+              ...session_info,
+            },
           };
-          res.status(status_code).json({ status:'error_occured_in_method_invocation', ...result }).end();
+          res.status(status_code).json({ status:'error', value:{...result}}).end();
           context.logger.output(       { type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
-            console.log( LOG_PREFIX, 'request_prop_name'  , request_prop_name );
+            console.log( LOG_PREFIX, 'callapi_method_path'  , session_info.callapi_method_path );
             console.log( LOG_PREFIX, 'http result:', 403 );
           })().catch(e=>console.error( MSG_UNCAUGHT_ERROR,e) );;
           done = true;
@@ -319,18 +329,18 @@ function __create_middleware( contextFactory ) {
           return;
         }
 
-        const resolved_method = resolved.value;
 
         if (
-          ( typeof resolved_method !== 'function')  ||
-          ( resolved_method.constructor.name !== 'AsyncFunction' )
+          ( typeof target_method !== 'function')  ||
+          ( target_method.constructor.name !== 'AsyncFunction' )
         ) {
           res.status(403).json( {status:'error_occured_in_method_invocation', reason : 'Forbidden' } ).end();
           context.logger.output({type  :'error_occured_in_method_invocation', ...result });
           (async()=>{
-            console.log( LOG_PREFIX, 'request_prop_name'  , request_prop_name );
+            console.log( LOG_PREFIX, 'callapi_method_path'  , session_info.callapi_method_path );
             console.log( LOG_PREFIX, 'http result:', 403 );
           })().catch(e=>console.error( MSG_UNCAUGHT_ERROR,e));;
+
           done = true;
 
           // Abort the process.
@@ -364,7 +374,7 @@ function __create_middleware( contextFactory ) {
 
         context.setOptions({ showReport : false, coloredReport:true });
 
-        if ( resolved.tags.includes( AUTO_CONNECTION ) ) {
+        if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
           context.setOptions({ autoCommit : true });
         }
 
@@ -377,14 +387,14 @@ function __create_middleware( contextFactory ) {
            */
           // >>> MODIFIED (Thu, 18 May 2023 17:45:04 +0900)
           // // 5) Execute the method.
-          // if ( Array.isArray( json_request_body  ) ) {
-          //   contextResult.value = await (context.executeTransaction( resolved_method, ... json_request_body ));
+          // if ( Array.isArray( target_method_args  ) ) {
+          //   contextResult.value = await (context.executeTransaction( target_method, ... target_method_args ));
           // } else {
-          //   contextResult.value = await (context.executeTransaction( resolved_method,     json_request_body ));
+          //   contextResult.value = await (context.executeTransaction( target_method,     target_method_args ));
           // }
           // <<< MODIFIED (Thu, 18 May 2023 17:45:04 +0900)
 
-          contextResult.value = await (context.executeTransaction( resolved_method, ... json_request_body ));
+          contextResult.value = await (context.executeTransaction( target_method, ... target_method_args ));
 
           contextResult.is_successful = true;
         } catch ( e ) {
@@ -392,7 +402,7 @@ function __create_middleware( contextFactory ) {
           contextResult.is_successful = false;
         }
 
-        if ( resolved.tags.includes( AUTO_CONNECTION ) ) {
+        if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
           //
         }
 

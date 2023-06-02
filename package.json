@@ -6,7 +6,9 @@
   "scripts": {
     "install": "",
     "start-test": "node --inspect ./service",
-    "test": "jest ./middleware.test.js --no-cache --watchAll --runInBand"
+    "test-jest": "jest ./middleware.test.js --no-cache --watchAll --runInBand",
+    "test": "node -r ./init.js middleware.test.js",
+    "end":true
   },
   "author": "",
   "license": "ISC",
