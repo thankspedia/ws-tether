@@ -117,18 +117,6 @@ const LOG_PREFIX = 'middleware-context' ;
 const MSG_UNCAUGHT_ERROR = '********************* an uncaught error was detected ***************************\n';
 
 
-
-class CallapiError extends Error {
-  constructor(nargs, ...args) {
-    super(...args);
-    this.callapi_result = {
-      ...nargs
-    };
-  }
-  is_callapi_error = true;
-}
-
-
 /**
  *
  *
@@ -185,13 +173,6 @@ const resolve_callapi_method_path = typesafe_function(
         }
       }, accumlator );
 
-      // if ( typeof result.value !== 'function' ) {
-      //   throw new CallapiError({
-      //     ...result,
-      //     status : 'forbidden',
-      //   });
-      // }
-
       return finallization(result);
 
     } catch (err) {
@@ -230,17 +211,6 @@ const resolve_callapi_method_path = typesafe_function(
   }
 );
 
-function ensure_method( value ) {
-  if ( typeof value === 'function' ) {
-    return value;
-  } else {
-    async function property_value() {
-      return value;
-    };
-    return property_value;
-  }
-}
-
 function filter_property_name( name ) {
   name = name.replace( /-/g, '_' );
   if ( name === '' ) {
@@ -272,10 +242,6 @@ function parse_query_parameter( query ) {
   return [ Object.fromEntries( p.entries() ) ];
 }
 
-const set_status_code = ( target, nargs )=>{
-  target.value = Object.assign(target.value, nargs );
-  return target;
-};
 
 const get_authentication_token = (req)=>{
   let auth = req.get('Authentication');
@@ -336,30 +302,6 @@ function __create_middleware( contextFactory ) {
         // Create a context object.
         context = await contextFactory({});
 
-        // The procedure to execute before invocation of the method.
-        context.contextInitializers.unshift( async function context_initializer() {
-          this.logger.output({
-            type : 'begin_of_method_invocation',
-            info : {
-              ...session_info,
-            }
-          });
-
-          // 4) get the current authentication token.
-          if ( 'set_user_identity' in this ) {
-            const authentication_token = get_authentication_token( req );
-
-            // (Wed, 07 Sep 2022 20:13:01 +0900)
-            await this.set_user_identity( authentication_token );
-          }
-
-          this.setOptions({ showReport : false, coloredReport:true });
-
-          if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
-            this.setOptions({ autoCommit : true });
-          }
-        });
-
 
         /*
          * Resolving Method
@@ -419,7 +361,6 @@ function __create_middleware( contextFactory ) {
           return;
         }
 
-
         /*
          * Preparing the Arguments
          */
@@ -447,6 +388,32 @@ function __create_middleware( contextFactory ) {
           // Abort the process.
           return;
         }
+
+        /*
+         * The procedure to execute before invocation of the method.
+         */
+        context.contextInitializers.unshift( async function context_initializer() {
+          this.logger.output({
+            type : 'begin_of_method_invocation',
+            info : {
+              ...session_info,
+            }
+          });
+
+          // 4) get the current authentication token.
+          if ( 'set_user_identity' in this ) {
+            const authentication_token = get_authentication_token( req );
+
+            // (Wed, 07 Sep 2022 20:13:01 +0900)
+            await this.set_user_identity( authentication_token );
+          }
+
+          this.setOptions({ showReport : false, coloredReport:true });
+
+          if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
+            this.setOptions({ autoCommit : true });
+          }
+        });
 
         /*
          * Invoking the Resolved Method
