@@ -238,17 +238,18 @@ function __create_middleware( contextFactory ) {
          */
         context = await contextFactory({});
 
-
         /*
          * The procedure to execute before invocation of the method.
          */
-        context.contextInitializers.unshift( async function context_initializer() {
+        async function context_initializer( resolved_callapi_method ) {
           this.logger.output({
             type : 'begin_of_method_invocation',
             info : {
               ...session_info,
             }
           });
+
+          console.log( 'sZc3Uifcwh0',  resolved_callapi_method );
 
           // 4) get the current authentication token.
           if ( 'set_user_identity' in this ) {
@@ -260,10 +261,16 @@ function __create_middleware( contextFactory ) {
 
           this.setOptions({ showReport : false, coloredReport:true });
 
-          if ( respapi_result.tags.includes( AUTO_CONNECTION ) ) {
+          if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
+            console.log( 'ew6pMCEV3o', resolved_callapi_method );
             this.setOptions({ autoCommit : true });
+
+            console.log( 'ew6pMCEV3o', this.getOptions() );
           }
-        });
+        }
+
+        // (Mon, 05 Jun 2023 20:07:53 +0900)
+        // context.contextInitializers.unshift( );
 
 
         /*
@@ -285,8 +292,14 @@ function __create_middleware( contextFactory ) {
             req.method,
 
             /* on_execution */
-            async ( target_method )=>{
+            async ( resolved_callapi_method )=>{
+              const target_method = resolved_callapi_method.value
+
               session_info.target_method = target_method;
+
+              // (Mon, 05 Jun 2023 20:07:53 +0900)
+              await context_initializer.call( context, resolved_callapi_method );
+
               /*
                * Invoking the Resolved Method
                */
