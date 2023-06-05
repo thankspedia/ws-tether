@@ -32,7 +32,19 @@ class Hello extends AsyncContext {
         }),
       }),
     }),
-  })
+  });
+
+  hello3 = p({
+    world : p({
+      foo : p({
+        bar : q({
+          baz : p(async function baz() {
+            throw new Error( 'hello world foo bar baz !!!!!!!');
+          }),
+        }),
+      }),
+    }),
+  });
 }
 
 async function hello_world() {
@@ -48,6 +60,20 @@ async function multiple(...args) {
 Hello.defineMethod( multiple, METHOD_POST,{
   unprotected_output : true,
 });
+
+
+
+Hello.defineMethod(
+  async function throw_hello_world() {
+    throw new Error( 'hello world !!');
+  },
+  METHOD_POST,
+  {
+    unprotected_output : true,
+  }
+);
+
+
 
 function createContext() {
   return Hello.create();

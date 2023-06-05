@@ -5,13 +5,13 @@ const { test, describe, it, before, after }  = require( 'node:test' );
 
 let testService = null;
 
-const filter = (v)=>({
+const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
   ...v,
   value :
     Object.fromEntries(
       Object
         .entries(v.value)
-        .filter( ([k,v])=>k!=='info'))
+        .filter( ([k,v])=>allowed_fields.includes(k)))
 });
 
 describe( 'middleware-test', ()=>{
@@ -79,6 +79,28 @@ describe( 'middleware-test', ()=>{
       }
     )
 
+  });
+
+  it( 'as no.4' , async()=>{
+
+    assert.deepEqual(
+      filter(
+        await (
+          fetch( 'http://localhost:2003/api/throw-hello-world', {
+            method:'POST',
+            body :'[]',
+          }).then(
+            response=>Promise.resolve( response.json() )
+          )
+        )
+      ,['message']),
+      {
+        status : 'error',
+        value : {
+          message : 'hello world !!',
+        },
+      }
+    )
   });
 });
 
