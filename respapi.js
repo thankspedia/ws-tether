@@ -101,13 +101,14 @@ const respapi = typesafe_function(
 
     if ( resolved_callapi_method.status === 'found' ) {
       try {
-        const value = await on_execution( resolved_callapi_method.value );
+        const value = await on_execution( resolved_callapi_method );
         return {
           ...resolved_callapi_method,
           status : 'succeeded',
           value  : value,
         };
       } catch (err) {
+        console.error('pd9ZpaS53L8',err);
         return {
           ...resolved_callapi_method,
           status : 'error',
