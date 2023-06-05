@@ -2,7 +2,7 @@ const express                = require( 'express' );
 const bodyParser             = require( 'body-parser' );
 const url                    = require( 'url' );
 const { AsyncContextResult } = require( 'asynchronous-context/result' );
-const { resolve_callapi_method_path } = require( 'asynchronous-context-frontend/respapi' );
+const { respapi } = require( 'asynchronous-context-frontend/respapi' );
 
 const {
   preventUndefined,
@@ -206,73 +206,10 @@ function __create_middleware( contextFactory ) {
           return;
         }
 
-        // Create a context object.
-        context = await contextFactory({});
-
-        /*
-         * Resolving Method
-         */
-        let resolved_callapi_method =null;
-
-        resolved_callapi_method   =
-          resolve_callapi_method_path( context, callapi_method_path, req.method /* http-method as TAGS */ );
-
-        if ( resolved_callapi_method.status !== 'found' ) {
-          /*
-           * Process errors from callapi.js
-           */
-          context.logger.output({ type  : 'detected_callapi_error' });
-
-          const result = {
-            status:'error',
-            value:{
-              status_code : null,
-              reason : null,
-              ...session_info,
-              ...resolved_callapi_method,
-            },
-          };
-
-          console.log( '0aCa8xD0oY0', resolved_callapi_method );
-
-          if ( false ) {
-            // dummy
-          } else if ( resolved_callapi_method.status === 'not_found' ) {
-            Object.assign( result.value, {
-              status_code : 404,
-              reason : 'Not Found',
-            });
-          } else if ( resolved_callapi_method.status === 'forbidden' ) {
-            Object.assign( result.value, {
-              status_code : 403,
-              reason : 'Forbidden',
-            });
-          } else {
-            Object.assign( result.value, {
-              status_code : 500,
-              reason : 'Internal Server Error',
-            });
-          }
-
-          res.status( result.value.status_code ).json(result).end();
-          done = true;
-
-          context.logger.output({ type  : 'error_occured_in_method_invocation', ... value, });
-
-          (async()=>{
-            console.log( LOG_PREFIX, 'http result:', value.status_code );
-          })().catch(err=>console.error(MSG_UNCAUGHT_ERROR,err) );
-
-          // Abort the process.
-          return;
-        }
 
         /*
          * Preparing the Arguments
          */
-        const target_method             = resolved_callapi_method.value
-        session_info.target_method      = resolved_callapi_method.value;
-
         const target_method_args        = ( req.method === 'GET' || req.method === 'HEAD' ) ? parse_query_parameter( urlobj.query ) : parse_request_body( req.body );
         session_info.target_method_args = target_method_args;
 
@@ -295,6 +232,13 @@ function __create_middleware( contextFactory ) {
           return;
         }
 
+
+        /*
+         * Create a context object.
+         */
+        context = await contextFactory({});
+
+
         /*
          * The procedure to execute before invocation of the method.
          */
@@ -316,42 +260,120 @@ function __create_middleware( contextFactory ) {
 
           this.setOptions({ showReport : false, coloredReport:true });
 
-          if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
+          if ( respapi_result.tags.includes( AUTO_CONNECTION ) ) {
             this.setOptions({ autoCommit : true });
           }
         });
 
 
         /*
-         * Invoking the Resolved Method
+         * Resolving Method
          */
-        try {
-          // 5) Execute the method.
-          const value =  await (context.executeTransaction( target_method, ... target_method_args ));
+        let respapi_result =null;
 
-          // 6) Set the flag `is_successful`
-          is_successful = true;
+        // 5) Execute the method.
+        respapi_result  =
+          await respapi(
+
+            /* callapi_target */
+            context,
+
+            /* callapi_method_path */
+            callapi_method_path,
+
+            /* http-method as TAGS */
+            req.method,
+
+            /* on_execution */
+            async ( target_method )=>{
+              session_info.target_method = target_method;
+              /*
+               * Invoking the Resolved Method
+               */
+              return await (context.executeTransaction( target_method, ... target_method_args ));
+            },
+          );
+
+
+        if ( respapi_result.status !== 'found' ) {
+          /*
+           * Process errors from callapi.js
+           */
+          context.logger.output({ type  : 'detected_callapi_error' });
+
+          let result = null;
+          let status_code = 100;
+
+          console.log( '0aCa8xD0oY0', respapi_result );
+
+          if ( false ) {
+            // dummy
+          } else if ( respapi_result.status === 'succeeded' ) {
+            // 6) Set the flag `is_successful`
+            is_successful = true;
+            status_code = 200;
+            result =
+               recursivelyUnprevent(
+                AsyncContextResult.createSuccessful(
+                  respapi_result.value ));
+
+          } else if ( respapi_result.status === 'error' ) {
+            status_code = 200;
+            result =
+              recursivelyUnprevent(
+                AsyncContextResult.createErroneous(
+                  respapi_result.value ));
+
+          } else if ( respapi_result.status === 'not_found' ) {
+            status_code = 404;
+            result = {
+              status:'error',
+              value:{
+                status_code,
+                reason : 'Not Found',
+                ...session_info,
+                ...respapi_result,
+              },
+            };
+          } else if ( respapi_result.status === 'forbidden' ) {
+            status_code = 403;
+            result = {
+              status:'error',
+              value:{
+                status_code,
+                reason : 'Forbidden',
+                ...session_info,
+                ...respapi_result,
+              },
+            };
+          } else {
+            status_code = 500,
+            result = {
+              status:'error',
+              value:{
+                status_code,
+                reason : 'Internal Server Error',
+                ...session_info,
+                ...respapi_result,
+              },
+            };
+          }
 
           // 7) Send the generated response.
-          res.status(200).json(
-            recursivelyUnprevent(
-              AsyncContextResult.createSuccessful( value ))).end();
 
+          // The Logging Series No.1
+          res.status( status_code ).json( result ).end();
           done = true;
 
-          // Abort the process.
-          return;
-        } catch (err) {
-          console.log( 'zvlSApLK8T4', err );
+          // The Logging Series No.2
+          res.status( status_code ).json( result ).end();
+          context.logger.output({ type  : 'the_result_of_method_invocation', ...result, });
 
-          // 8) Send the generated response.
-          res.status(200).json(
-            recursivelyUnprevent(
-              AsyncContextResult.createErroneous( err )
-            )
-          ).end();
+          // The Logging Series No.3
+          (async()=>{
+            console.log( LOG_PREFIX, 'http result:', result );
+          })().catch(err=>console.error(MSG_UNCAUGHT_ERROR,err) );
 
-          done = true;
           // Abort the process.
           return;
         }
