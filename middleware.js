@@ -379,7 +379,6 @@ function __create_middleware( contextFactory ) {
           done = true;
 
           // The Logging Series No.2
-          res.status( status_code ).json( result ).end();
           context.logger.output({ type  : 'the_result_of_method_invocation', ...result, });
 
           // The Logging Series No.3
