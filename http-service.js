@@ -33,7 +33,7 @@ if ( require.main === module ) {
         });
 
         app.use( cors( { origin : cors_origins } ) );
-        app.use( '/api',  require( './middleware' ).create( contextFactory ));
+        app.use( '/api',  require( './http-middleware' ).create( contextFactory ));
         app.use( '/blank', (req,res,next)=>{
           res.json({status:'succeeded', value:'blank' }).end();
         });
