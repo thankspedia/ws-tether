@@ -14,7 +14,7 @@ const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
         .filter( ([k,v])=>allowed_fields.includes(k)))
 });
 
-describe( 'middleware-test', ()=>{
+describe( 'http-middleware-test', ()=>{
   before(()=>{
   });
   after(()=>{
