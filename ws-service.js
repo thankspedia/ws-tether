@@ -20,7 +20,7 @@ function on_connection1(ws) {
   ws.on('error', console.error);
   ws.on('message', function message(data) {
     console.log( 'received No.1: %s', data );
-    ws.send('shutdown immediately');
+    ws.send( 'shutdown immediately' );
   });
 }
 

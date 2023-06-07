@@ -6,7 +6,7 @@
   "scripts": {
     "install": "",
     "start-http-server": "node --inspect ./http-service",
-    "start-ws-server": "node ./ws-service",
+    "start-ws-server": "node -r ./init.js ./ws-service",
     "test-jest": "jest ./http-middleware.test.js --no-cache --watchAll --runInBand",
     "test": "node -r ./init.js http-middleware.test.js",
     "end": true

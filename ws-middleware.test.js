@@ -29,22 +29,24 @@ describe( 'http-middleware-test', ()=>{
     });
 
     ws.on('open', function open() {
-      setTimeout( ()=>{
-        const data = `hello`;
-        ws.send(data);
+      setTimeout(()=>{
+        ws.send(JSON.stringify({
+          method_path : [ 'ws_hello_world', ],
+          method_args : [ 1, 2, 3 ],
+        }));
       },1000);
     });
 
-    ws.on('message', function message(data) {
+    ws.on('message', function message(__data) {
+      const data = JSON.parse( __data.toString() );
       console.log( 'received a message', data );
-      const s = data.toString();
-      if ( s === 'shutdown immediately' ) {
-        console.log( s );
+
+      if ( data.message === 'shutdown immediately' ) {
+        console.log( data );
         console.log( 'okay,sir' );
         ws.close();
       }
     });
   });
-
 });
 

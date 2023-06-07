@@ -47,12 +47,32 @@ class Hello extends AsyncContext {
   });
 }
 
-async function hello_world() {
-  return 'hello world !!';
-}
-Hello.defineMethod( hello_world, METHOD_POST,{
-  unprotected_output : true,
-});
+Hello.defineMethod(
+  async function ws_hello_world() {
+    setTimeout( ()=>{
+      this.send_ws_message({
+        message : 'shutdown immediately',
+      });
+    },500);
+    return 'hello world !!';
+  },
+  METHOD_POST,
+  'WEBSOCKET_METHOD',
+  {
+    unprotected_output : true,
+  }
+);
+
+Hello.defineMethod(
+  async function hello_world() {
+    return 'hello world !!';
+  },
+  METHOD_POST,
+  'WEBSOCKET_METHOD',
+  {
+    unprotected_output : true,
+  }
+);
 
 async function multiple(...args) {
   return [ ... args ];
@@ -67,7 +87,7 @@ Hello.defineMethod(
   async function throw_hello_world() {
     throw new Error( 'hello world !!');
   },
-  METHOD_POST,
+  'WEBSOCKET_METHOD',
   {
     unprotected_output : true,
   }
