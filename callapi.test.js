@@ -13,7 +13,7 @@ function createContext() {
       callapi                   : require('./callapi' ).standard_callapi,
     });
   } else {
-    return require( 'asynchronous-context-backend/middleware-test-context-factory' ).createContext();
+    return require( 'asynchronous-context-backend/http-middleware-test-context-factory' ).createContext();
   }
 }
 
