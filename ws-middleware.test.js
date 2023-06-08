@@ -6,6 +6,15 @@ const { WebSocket } = require( 'ws' );
 
 let testService = null;
 
+const host_object = {
+  foo: {
+    bar : {
+      hello : function( a,b ) {
+      },
+    },
+  },
+};
+
 const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
   ...v,
   value :
