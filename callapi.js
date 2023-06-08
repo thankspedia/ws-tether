@@ -72,7 +72,7 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
  * 1. Now `create_callapi_bridge()` delegates all named arguments to `callapi` so
  * that `callapi()` can receive any named arguments
  *
- * 2. `standard_callapi` takes the following five arguments.
+ * 2. `http_frontend_callapi` takes the following five arguments.
  *
  *     nargs : object(
  *       http_method               : and(
@@ -87,7 +87,7 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
  *       method_args               : array_of( any() ),
  *     ),
  */
-async function standard_callapi( nargs ) {
+async function http_frontend_callapi( nargs ) {
   const {
     http_method                = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_method'   ),
     http_server_url            = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_server_url' ),
@@ -188,10 +188,10 @@ function create_error_callapi( message ) {
 
 const error_callapi = create_error_callapi( 'Currently the API service is not available. Try it again, later.' );
 
-module.exports.standard_callapi = standard_callapi;
-module.exports.dummy_callapi    = dummy_callapi;
-module.exports.error_callapi    = error_callapi;
-module.exports.callapi          = standard_callapi;
-module.exports.create_error_callapi = create_error_callapi;
+module.exports.http_frontend_callapi = http_frontend_callapi;
+module.exports.dummy_callapi         = dummy_callapi;
+module.exports.error_callapi         = error_callapi;
+// module.exports.callapi               = http_frontend_callapi;
+module.exports.create_error_callapi  = create_error_callapi;
 
 

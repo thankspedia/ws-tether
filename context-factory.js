@@ -1,9 +1,10 @@
 
-const { create_callapi_bridge      } = require( './bridge' );
-const { standard_callapi : callapi } = require( './callapi' );
+const { create_callapi_bridge  } = require( './bridge' );
+const { http_frontend_callapi  } = require( './callapi' );
 
 function createContext( nargs ) {
-  return create_callapi_bridge( { ...nargs, http_method : 'POST', callapi });
+  const callapi = http_frontend_callapi;
+  return create_callapi_bridge( { ...nargs, http_method : 'POST', callapi  });
 }
 module.exports.createContext = createContext;
 

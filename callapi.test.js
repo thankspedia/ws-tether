@@ -10,7 +10,7 @@ function createContext() {
     return require( './callapi' ).createContext({
       http_server_url           : 'http://localhost:2003/api/',
       http_authentication_token : 'hello_authentication_token',
-      callapi                   : require('./callapi' ).standard_callapi,
+      callapi                   : require('./callapi' ).http_frontend_callapi,
     });
   } else {
     return require( 'asynchronous-context-backend/http-middleware-test-context-factory' ).createContext();

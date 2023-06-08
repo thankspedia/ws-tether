@@ -39,7 +39,7 @@ function create_callapi_bridge( __nargs ) {
 
   // // console.log( nargs );
   // const {
-  //   callapi                   = standard_callapi,
+  //   callapi                   = http_frontend_callapi,
   //   method_path               = [],
   //   http_method               = 'POST',
   //   http_server_url           = (()=>{throw new Error( 'http_server_url must be specified' )})(),
