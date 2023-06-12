@@ -2,7 +2,7 @@
   "name": "asynchronous-context-frontend",
   "version": "1.0.0",
   "description": "",
-  "main": "callapi.js",
+  "main": "http-callapi.js",
   "scripts": {
     "start-test": "node --inspect -e \"require('asynchronous-context-backend' ).startService() \"",
     "test-b": "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",

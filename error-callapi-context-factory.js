@@ -1,6 +1,6 @@
 
 const { create_callapi_bridge } = require( './callapi-bridge' );
-const { create_error_callapi  } = require( './callapi' );
+const { create_error_callapi  } = require( './error-callapi' );
 
 function createErrorContext( nargs ) {
   if ( ! ( 'error_message' in  nargs ) ) {

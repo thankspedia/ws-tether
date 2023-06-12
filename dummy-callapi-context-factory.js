@@ -1,6 +1,6 @@
 
 const { create_callapi_bridge } = require( './callapi-bridge' );
-const { dummy_callapi         } = require( './callapi' );
+const { dummy_callapi         } = require( './dummy-callapi' );
 
 function createDummyContext( nargs ) {
   const callapi = dummy_callapi;
