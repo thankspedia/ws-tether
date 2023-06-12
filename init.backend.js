@@ -1,5 +1,9 @@
 
 {
+  require('asynchronous-context/settings').filenameOfSettings('.settings.backend.json' );
+}
+
+{
   // const fs = require('fs');
   // const path = require('path');
   // const dotenv_file = path.resolve(process.cwd(), '.env');

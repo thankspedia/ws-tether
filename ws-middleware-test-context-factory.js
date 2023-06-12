@@ -57,6 +57,7 @@ Hello.defineMethod(
     return 'hello world !!';
   },
   METHOD_POST,
+  'WEBSOCKET_METHOD',
   {
     unprotected_output : true,
   }
@@ -67,6 +68,7 @@ Hello.defineMethod(
     return 'hello world !!';
   },
   METHOD_POST,
+  'WEBSOCKET_METHOD',
   {
     unprotected_output : true,
   }
@@ -85,7 +87,7 @@ Hello.defineMethod(
   async function throw_hello_world() {
     throw new Error( 'hello world !!');
   },
-  METHOD_POST,
+  'WEBSOCKET_METHOD',
   {
     unprotected_output : true,
   }
