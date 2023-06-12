@@ -7,12 +7,17 @@
     "frontend-old-test-b": "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
     "frontend-old-test"  : "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
 
-    "start-frontend-test": "node -r ./init.frontend.js --inspect -e \"require('asynchronous-context-backend' ).startService() \"",
+    "start-frontend-test": "node -r ./ws-middleware.init.js --inspect -e \"require('asynchronous-context-backend' ).startService() \"",
     "test-frontend" : "",
-    "start-http-server": "node -r ./init.backend.js --inspect ./http-middleware-service",
-    "start-ws-server": "node -r ./init.js ./ws-middleware-service",
-    "test-jest": "jest ./http-middleware.test.js --no-cache --watchAll --runInBand",
-    "test.backend": "node -r ./init.backend.js http-middleware.test.js",
+
+    "prepare-test-ws-middleware": "node -r ./ws-middleware-test.init.js ./ws-middleware-service.js",
+    "test-ws-middleware"        : "node -r ./ws-middleware-test.init.js ./ws-middleware.test.js",
+
+    "prepare-test-http-callapi": "node -r ./http-callapi-test.init.js ./http-middleware-service.js",
+    "test-http-callapi": "node -r ./http-callapi-test.init.js ./http-callapi.test.js",
+
+    "prepare-test-http-middleware": "node -r ./http-middleware-test.init.js ./http-middleware-service.js",
+    "test-http-middleware"        : "node -r ./http-middleware-test.init.js ./http-middleware.test.js",
 
     "end":""
   },

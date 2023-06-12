@@ -1,6 +1,6 @@
 
 {
-  require('asynchronous-context/settings').filenameOfSettings('.settings.backend.json' );
+  require('asynchronous-context/settings').filenameOfSettings('http-middleware-test-context-factory.settings.json' );
 }
 
 {
