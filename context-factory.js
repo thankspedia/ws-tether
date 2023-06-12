@@ -1,5 +1,5 @@
 
-const { create_callapi_bridge  } = require( './bridge' );
+const { create_callapi_bridge  } = require( './callapi-bridge' );
 const { http_frontend_callapi  } = require( './callapi' );
 
 function createContext( nargs ) {
