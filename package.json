@@ -5,8 +5,8 @@
   "main": "service.js",
   "scripts": {
     "install": "",
-    "start-http-server": "node --inspect ./http-service",
-    "start-ws-server": "node -r ./init.js ./ws-service",
+    "start-http-server": "node --inspect ./http-middleware-service",
+    "start-ws-server": "node -r ./init.js ./ws-middleware-service",
     "test-jest": "jest ./http-middleware.test.js --no-cache --watchAll --runInBand",
     "test": "node -r ./init.js http-middleware.test.js",
     "end": true
