@@ -3,6 +3,8 @@ const { WebSocketServer } = require( 'ws' );
 const { parse } = require( 'url');
 const { respapi } = require( 'asynchronous-context-backend/respapi' );
 const { trace_validator }  = require( 'vanilla-schema-validator' );
+const { create_callapi_bridge } = require( './callapi-bridge' );
+const { websocket_callapi } = require( './ws-callapi' );
 
 const { schema } = require( 'vanilla-schema-validator' );
 const t_respapi_message = schema.compile`
@@ -18,8 +20,8 @@ function createWebSocketUpgrader( on_connection ) {
   const wss = new WebSocketServer({ noServer: true });
   wss.on( 'connection', on_connection );
   return ( request, socket, head )=>{
-    wss.handleUpgrade( request, socket, head, function done(ws) {
-      wss.emit('connection', ws, request);
+    wss.handleUpgrade( request, socket, head, function done(websocket) {
+      wss.emit('connection', websocket, request);
     });
   };
 }
@@ -62,9 +64,9 @@ const get_authentication_token = (req)=>{
 
 function createAsyncContextWebsocketConnectionHandler( contextFactory ) {
   return (
-    async function on_connection( ws, req ) {
-      ws.on( 'error', console.error );
-      ws.on( 'message', async function message(data) {
+    async function on_connection( websocket, req ) {
+      websocket.on( 'error', console.error );
+      websocket.on( 'message', async function message(data) {
         const message = JSON.parse( data.toString() );
         const info = trace_validator( t_respapi_message, message );
         if ( ! info.value ) {
@@ -73,8 +75,12 @@ function createAsyncContextWebsocketConnectionHandler( contextFactory ) {
 
         const context = await contextFactory();
         context.send_ws_message = async function( value ) {
-          ws.send( JSON.stringify( value ) );
+          websocket.send( JSON.stringify( value ) );
         };
+        context.frontend = create_callapi_bridge({
+          callapi : websocket_callapi,
+          websocket,
+        });
 
         // COPIED FROM http-middleware
         /*
