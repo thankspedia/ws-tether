@@ -46,14 +46,14 @@ function create_callapi_bridge( __nargs ) {
   //   http_authentication_token = (()=>{throw new Error( 'http_authentication_token must be specified' )})(),
   // } = nargs;
 
-  return new Proxy(()=>{}, {
+  return new Proxy( function delegating_proxy(){}, {
     async apply( target, thisArg, args ) {
 
-      const result = await nargs.callapi({
+      const result = await (nargs.callapi({
         ...nargs,
         method_path : [ ...nargs.method_path ],
         method_args : [ ... args             ],
-      });
+      }));
 
       if ( 'status' in result ) {
         if ( result.status === 'error' ) {

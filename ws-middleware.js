@@ -9,9 +9,12 @@ const { websocket_callapi } = require( './ws-callapi' );
 const { schema } = require( 'vanilla-schema-validator' );
 const t_respapi_message = schema.compile`
   object(
-    method_path : array_of( string() ),
-    method_args : array_of( any() ),
-  ),
+    command_type : string(),
+    command_value : object(
+      method_path : array_of( string() ),
+      method_args : array_of( any() ),
+    ),
+  )
 `();
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
@@ -122,7 +125,7 @@ function createAsyncContextWebsocketConnectionHandler( contextFactory ) {
             context,
 
             /* callapi_method_path */
-            message.method_path,
+            message.command_value.method_path,
 
             /* http-method as TAGS */
             'WEBSOCKET_METHOD',
@@ -130,7 +133,7 @@ function createAsyncContextWebsocketConnectionHandler( contextFactory ) {
             /* on_execution */
             async ( resolved_callapi_method )=>{
               const target_method = resolved_callapi_method.value
-              const target_method_args = message.method_args;
+              const target_method_args = message.command_value.method_args;
 
               // (Mon, 05 Jun 2023 20:07:53 +0900)
               await context_initializer.call( context, resolved_callapi_method );

@@ -34,6 +34,7 @@ function on_connection2(ws) {
 
 if ( require.main === module ) {
   const createSocketUpgrader = async ()=>{
+
     const settings = await asyncReadBackendSettings();
     const {
       ports               = [ 3000 ],
@@ -56,6 +57,15 @@ if ( require.main === module ) {
     return (
       async ()=>{
 
+        const settings = await asyncReadBackendSettings();
+        const {
+          ports               = [ 3000 ],
+          cors_origins        = default_cors_origins,
+          context_factory     = (()=>{throw new Error('context_factory is not defined')})(),
+          purge_require_cache = false,
+        } = settings?.async_context_websocket_backend ?? {};
+
+
         const createApp = ()=>{
           // Initializing the app.
           const app = express();
@@ -69,34 +79,37 @@ if ( require.main === module ) {
         };
 
         const servers  = [ createApp() ];
-        const services = [ ];
-        return [{
-          start() {
-            services.push(
-              ...(
-                servers.map(
-                  e=>{
-                    const server = e.listen(
-                      3952,
-                      ()=>{
-                        console.log( 'ws-server opened' );
-                      }
-                    );
-                    server.on('upgrade', handle_upgrade );
-                    return server;
-                  }
-                )
-              )
-            );
-          },
+        const services = [];
 
-          stop() {
-            services.forEach( e=>e.close(()=>{
-              console.log( 'ws server closed' );
-            }));
-            services.length = 0;
-          },
-        }];
+        return ports.map( port=>(
+          {
+            start() {
+              services.push(
+                ...(
+                  servers.map(
+                    e=>{
+                      const server = e.listen(
+                        port,
+                        ()=>{
+                          console.log( 'ws-server opened' );
+                        }
+                      );
+                      server.on('upgrade', handle_upgrade );
+                      return server;
+                    }
+                  )
+                )
+              );
+            },
+
+            stop() {
+              services.forEach( e=>e.close(()=>{
+                console.log( 'ws server closed' );
+              }));
+              services.length = 0;
+            },
+          }
+        ));
       }
     );
   };

@@ -74,6 +74,20 @@ Hello.defineMethod(
   }
 );
 
+Hello.defineMethod(
+  async function say_hello() {
+    this.send_ws_message(
+      "Okay, your request was received."
+    );
+    return 'hello';
+  },
+  METHOD_POST,
+  'WEBSOCKET_METHOD',
+  {
+    unprotected_output : true,
+  }
+);
+
 async function multiple(...args) {
   return [ ... args ];
 }
