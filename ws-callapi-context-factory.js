@@ -22,14 +22,25 @@ function awaitOpen( websocket ) {
   });
 }
 
-function asyncCreateClientWebsocketContext( ws_remote_address, __createContext = createContext ) {
+function asyncCreateWebsocketContext( ws_spec, __createContext = createContext ) {
   if ( typeof __createContext !== 'function' ) {
     throw new Error( `incorrect createContext parameter` );
   }
-  const websocket = new WebSocket( ws_remote_address );
+  const websocket = (()=>{
+    if ( typeof ws_spec === 'string' ) {
+      return new WebSocket( ws_spec );
+    } else {
+      return ws_spec;
+    }
+  })();
   const context   = __createContext({ websocket });
   return awaitOpen( websocket ).then( ()=>Promise.resolve({context}) );
 }
-module.exports.asyncCreateClientWebsocketContext = asyncCreateClientWebsocketContext;
+module.exports.asyncCreateWebsocketContext = asyncCreateWebsocketContext;
+
+
+
+
+
 
 

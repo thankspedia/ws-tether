@@ -3,7 +3,7 @@ const { set_typesafe_tags } = require( 'runtime-typesafety' );
 const { middleware, METHOD_POST } = require( './http-middleware' );
 
 function p(o) {
-  return set_typesafe_tags( o, METHOD_POST );
+  return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
 }
 function q(o) {
   return o;
@@ -14,7 +14,12 @@ class Hello extends AsyncContext {
     world : p({
       foo : p({
         bar : p({
-          baz : p(async function baz() {
+          baz : p(async (...args)=>{
+
+            this.send_ws_message({
+              message : [ 'okay', ...args ],
+            });
+
             return 'hello world foo bar baz !!!!!!!';
           }),
         }),
@@ -64,7 +69,7 @@ Hello.defineMethod(
 );
 
 Hello.defineMethod(
-  async function hello_world() {
+  async function hello_world(...args) {
     return 'hello world !!';
   },
   METHOD_POST,

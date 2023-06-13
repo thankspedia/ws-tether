@@ -5,12 +5,11 @@ const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
 
 const {
-  asyncCreateClientWebsocketContext,
+  asyncCreateWebsocketContext,
 } = require( './ws-callapi-context-factory' );
 
-const WS_ADDRESS = 'ws://localhost:3001/foo';
 async function asyncCreateContext() {
-  return asyncCreateClientWebsocketContext( WS_ADDRESS );
+  return asyncCreateWebsocketContext( 'ws://localhost:3001/foo' );
 }
 
 describe( ()=>{
@@ -18,11 +17,7 @@ describe( ()=>{
     const p = new Promise( async (resolve,reject)=>{
       const { context } = await asyncCreateContext();
       const websocket = (await context.websocket() );
-      console.log( 'HFwyhpXldo', context );
-
-      const close = ()=>{
-        websocket.close();
-      };
+      const close = ()=>websocket.close();
 
       websocket.on( 'message', ( data )=>{
         const v = JSON.parse( data.toString() );
@@ -46,10 +41,34 @@ describe( ()=>{
     return await p;
   });
 
-  // it('as test2', async()=>{
-  //   const context = await asyncCreateContext();
-  //   await (context.hello.world.foo.bar.baz('hello world'));
-  // });
+  it('as test2', async()=>{
+    const p = new Promise( async (resolve,reject)=>{
+      const { context } = await asyncCreateContext();
+      const websocket = (await context.websocket() );
+      const close = ()=>websocket.close();
+
+      websocket.on( 'message', ( data )=>{
+        const v = JSON.parse( data.toString() );
+        if ( v.message.join(',') === 'okay,hello,world,foo' ) {
+          resolve(v);
+        } else {
+          reject(v);
+        }
+        close();
+      });
+
+      setTimeout( ()=>{
+        reject('timeout')
+        close();
+      }, 1000 );
+
+      await (context.hello.world.foo.bar.baz( 'hello','world','foo' ));
+    });
+
+    //assert.equal( await ( context.hello_world( 'hello world !!' ) ) , 'hello world !!' );
+    return await p;
+  });
+
 
   // it('as test3', async()=>{
   //   await assert.rejects((async()=>{
