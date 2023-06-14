@@ -15,7 +15,6 @@ class Hello extends AsyncContext {
       foo : p({
         bar : p({
           baz : p(async (...args)=>{
-
             this.send_ws_message({
               message : [ 'okay', ...args ],
             });

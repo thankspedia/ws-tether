@@ -5,11 +5,11 @@ const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
 
 const {
-  asyncCreateWebsocketContext,
+  asyncCreateWebsocketClientContext,
 } = require( './ws-callapi-context-factory' );
 
 async function asyncCreateContext() {
-  return asyncCreateWebsocketContext( 'ws://localhost:3001/foo' );
+  return asyncCreateWebsocketClientContext( 'ws://localhost:3001/foo' );
 }
 
 describe( ()=>{
@@ -49,6 +49,7 @@ describe( ()=>{
 
       websocket.on( 'message', ( data )=>{
         const v = JSON.parse( data.toString() );
+        console.log( 'hJGqsnbq5A4', v );
         if ( v.message.join(',') === 'okay,hello,world,foo' ) {
           resolve(v);
         } else {

@@ -4,6 +4,7 @@
   "description": "",
   "main": "service.js",
   "scripts": {
+    "test" : "node callapi.test.js",
     "frontend-old-test-b": "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
     "frontend-old-test"  : "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
 
@@ -12,6 +13,9 @@
 
     "prepare-test-ws-callapi"      : "node -r ./ws-callapi-test.init.js ./ws-middleware-service.js",
     "test-ws-callapi"              : "node -r ./ws-callapi-test.init.js ./ws-callapi.test.js",
+
+    "prepare-test-ws-respapi"      : "node -r ./ws-respapi-test.init.js ./ws-middleware-service.js",
+    "test-ws-respapi"              : "node -r ./ws-respapi-test.init.js ./ws-respapi.test.js",
 
     "prepare-test-ws-middleware"   : "node -r ./ws-middleware-test.init.js ./ws-middleware-service.js",
     "test-ws-middleware"           : "node -r ./ws-middleware-test.init.js ./ws-middleware.test.js",

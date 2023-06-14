@@ -11,7 +11,7 @@ const { loadContextFactory  } = require( './context-factory-loader.js' );
 const {
   createWebSocketUpgrader,
   createMultipleWebSocketUpgrader,
-  createAsyncContextWebsocketConnectionHandler,
+  createAsyncContextWebsocketInitializer,
 } = require( './ws-middleware' );
 
 
@@ -48,7 +48,7 @@ if ( require.main === module ) {
     return createMultipleWebSocketUpgrader({
       '/foo' :
       createWebSocketUpgrader(
-        createAsyncContextWebsocketConnectionHandler(
+        createAsyncContextWebsocketInitializer(
           contextFactory )),
     });
   };
