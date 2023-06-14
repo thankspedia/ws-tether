@@ -43,8 +43,6 @@ function websocket_callapi_handler( nargs ) {
       value : null,
     };
   }
-
-
 }
 
 module.exports.websocket_callapi_handler = websocket_callapi_handler;

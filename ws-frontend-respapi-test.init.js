@@ -1,6 +1,6 @@
 
 {
-  require( 'asynchronous-context/settings' ).filenameOfSettings( 'ws-respapi-test.settings.json' );
+  require( 'asynchronous-context/settings' ).filenameOfSettings( 'ws-frontend-respapi-test.settings.json' );
 }
 
 {
