@@ -178,8 +178,6 @@ function createAsyncContextWebsocketInitializer( contextFactory, event_handlers 
 
             /* on_execution */
             async ( resolved_callapi_method )=>{
-              const target_method      = resolved_callapi_method.value
-              const target_method_args = message.command_value.method_args;
 
               // (Mon, 05 Jun 2023 20:07:53 +0900)
               await context_initializer.call( context, resolved_callapi_method );
@@ -187,6 +185,8 @@ function createAsyncContextWebsocketInitializer( contextFactory, event_handlers 
               /*
                * Invoking the Resolved Method
                */
+              const target_method      = resolved_callapi_method.value
+              const target_method_args = message.command_value.method_args;
               return await (context.executeTransaction( target_method, ... target_method_args ));
             },
           );
