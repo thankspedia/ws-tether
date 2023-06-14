@@ -14,7 +14,7 @@
     "end": true
   },
   "async_context_websocket_backend" : {
-    "context_factory" :"./ws-middleware-test-context-factory",
+    "context_factory" :"./ws-backend-respapi-test-context-factory.js",
     "purge_require_cache" : false,
     "static_paths":[],
     "ports": [ 3001 ],

@@ -1,25 +1,17 @@
 
 const { WebSocketServer } = require( 'ws' );
 const { parse } = require( 'url');
-const { respapi } = require( './respapi.js' );
+
+const {
+  respapi,
+  t_respapi_message,
+} = require( './respapi.js' );
+
 const { trace_validator }  = require( 'vanilla-schema-validator' );
 const { create_callapi } = require( './callapi.js' );
 const { websocket_callapi_handler } = require( './ws-callapi' );
 
-const { schema } = require( 'vanilla-schema-validator' );
-const t_respapi_message = schema.compile`
-  object(
-    command_type : string(),
-    command_value : object(
-      method_path : array_of( string() ),
-      method_args : array_of( any() ),
-    ),
-  )
-`();
-
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
-
-
 
 function create_websocket_upgrader( on_init_websocket ) {
   const wss = new WebSocketServer({ noServer: true });
@@ -58,7 +50,6 @@ const create_multi_path_upgrade_handler = (mapper)=>(
   }
 );
 module.exports.create_multi_path_upgrade_handler = create_multi_path_upgrade_handler;
-
 
 
 const get_authentication_token = (req)=>{

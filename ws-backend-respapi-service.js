@@ -12,7 +12,7 @@ const {
   create_websocket_upgrader,
   create_multi_path_upgrade_handler,
   create_backend_websocket_initializer,
-} = require( './ws-middleware' );
+} = require( './ws-backend-respapi.js' );
 
 
 

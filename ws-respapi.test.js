@@ -7,26 +7,22 @@ const { test, describe, it, before, after }  = require( 'node:test' );
 const { AsyncContext } = require( 'asynchronous-context' );
 const { METHOD_POST  } = require( 'asynchronous-context-backend' );
 
-const { schema, trace_validator } = require( 'vanilla-schema-validator' );
 const { create_callapi } = require( './callapi.js' );
 const { websocket_callapi_handler } = require( './ws-callapi' );
 const { create_websocket, await_websocket, await_sleep } = require( './ws-utils.js' );
 const { set_typesafe_tags } = require( 'runtime-typesafety' );
-const { respapi } = require( './respapi.js' );
+
+const {
+ t_handle_message,
+ t_respapi_message,
+ handle_on_message_of_ws_frontend,
+ on_init_websocket,
+} = require( './ws-frontend-respapi.js' );
 
 const {
   asyncCreateWebsocketServerContext,
 } = require( './ws-callapi-context-factory' );
 
-const t_respapi_message = schema.compile`
-  object(
-    command_type : string(),
-    command_value : object(
-      method_path : array_of( string() ),
-      method_args : array_of( any() ),
-    ),
-  )
-`();
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
@@ -81,93 +77,6 @@ function createContext(...args) {
   return HelloWorld.create(...args);
 }
 
-
-const t_handle_message = schema.compile`
-  object(
-    context   : object(),
-    websocket : object(),
-    data      : object(),
-  ),
-`();
-
-async function handle_websocket_message( nargs ) {
-  {
-    const info = trace_validator( t_handle_message, nargs );
-    if ( ! info.value ) {
-      throw new Error( 'invalid args ' + info.report() );
-    }
-  }
-
-  const {
-    context,
-    websocket,
-    data,
-
-  } = nargs;
-
-  const message = JSON.parse( data.toString() );
-  {
-    const info = trace_validator( t_respapi_message, message );
-    if ( ! info.value ) {
-      throw new Error( 'invalid message' + info.report() );
-    }
-  }
-
-
-  const respapi_result  =
-    await respapi(
-      /* callapi_target */
-      context,
-
-      /* callapi_method_path */
-      message.command_value.method_path,
-
-      /* http-method as TAGS */
-      'WEBSOCKET_METHOD',
-
-      /* on_execution */
-      async ( resolved_callapi_method )=>{
-
-        // (Mon, 05 Jun 2023 20:07:53 +0900)
-        // await context_initializer.call( context, resolved_callapi_method );
-
-        /*
-         * Invoking the Resolved Method
-         */
-        const target_method      = resolved_callapi_method.value
-        const target_method_args = message.command_value.method_args;
-        return await (context.executeTransaction( target_method, ... target_method_args ));
-      },
-    );
-
-  console.log( 'received No.1: %s', data );
-  console.log( 'respapi_result', respapi_result );
-  // console.log( 'context.hello_world', await context.hello_world() );
-
-  return context
-
-}
-
-
-/*
- * See :
- * ```
- *    const { create_backend_websocket_initializer } = require( './ws-middleware' );
- * ```
- */
-
-function on_init_websocket( websocket, context ) {
-  websocket.on( 'message', (data)=>{
-    return handle_websocket_message({
-      context,
-      websocket,
-      data,
-    });
-  });
-  websocket.on( 'error', (...args)=>{
-    console.error( ...args );
-  });
-}
 
 
 describe( ()=>{

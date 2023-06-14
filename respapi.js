@@ -155,5 +155,16 @@ module.exports.respapi = respapi;
 
 
 
+const t_respapi_message = schema.compile`
+  object(
+    command_type : string(),
+    command_value : object(
+      method_path : array_of( string() ),
+      method_args : array_of( any() ),
+    ),
+  )
+`();
+module.exports.t_respapi_message = t_respapi_message;
+
 
 
