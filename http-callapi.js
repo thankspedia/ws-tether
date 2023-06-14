@@ -69,10 +69,9 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
 // const http_method      = 'POST';
 
 /*
- * 1. Now `create_callapi_bridge()` delegates all named arguments to `callapi` so
- * that `callapi()` can receive any named arguments
+ * 1. Now `create_callapi()` delegates all named arguments to `callapi_handler`.
  *
- * 2. `http_frontend_callapi` takes the following five arguments.
+ * 2. `http_callapi_handler` takes the following five arguments.
  *
  *     nargs : object(
  *       http_method               : and(
@@ -87,7 +86,7 @@ const create_fetch_url = ( server_url, method_path, query_string )=>{
  *       method_args               : array_of( any() ),
  *     ),
  */
-async function http_frontend_callapi( nargs ) {
+async function http_callapi_handler( nargs ) {
   const {
     http_method                = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_method'   ),
     http_server_url            = ((v)=>{ throw new Error(`${v} is not specified`) })( 'http_server_url' ),
@@ -156,6 +155,6 @@ async function http_frontend_callapi( nargs ) {
   }
 }
 
-module.exports.http_frontend_callapi = http_frontend_callapi;
+module.exports.http_callapi_handler = http_callapi_handler;
 
 

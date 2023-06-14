@@ -18,19 +18,19 @@ function create_callapi_overrider( args ) {
       throw new Error( 'this should not happen' );
     }
 
-    return create_callapi_bridge( overriden_args );
+    return create_callapi( overriden_args );
   };
 }
 
-function create_callapi_bridge( __nargs ) {
+function create_callapi( __nargs ) {
   // duplicate the object that contains the named arguments:
   const nargs = {
     ... __nargs,
   };
 
   // check the specified named arguments:
-  if ( ! ( 'callapi' in nargs ) ) {
-    throw new Error( 'callapi is not specified' );
+  if ( ! ( 'callapi_handler' in nargs ) ) {
+    throw new Error( 'callapi_handler is not specified' );
   }
   if ( ! ( 'method_path' in nargs  ) ) {
     nargs.method_path = [];
@@ -39,7 +39,7 @@ function create_callapi_bridge( __nargs ) {
 
   // // console.log( nargs );
   // const {
-  //   callapi                   = http_frontend_callapi,
+  //   callapi_handler           = http_callapi_handler,
   //   method_path               = [],
   //   http_method               = 'POST',
   //   http_server_url           = (()=>{throw new Error( 'http_server_url must be specified' )})(),
@@ -49,7 +49,7 @@ function create_callapi_bridge( __nargs ) {
   return new Proxy( function delegating_proxy(){}, {
     async apply( target, thisArg, args ) {
 
-      const result = await (nargs.callapi({
+      const result = await (nargs.callapi_handler({
         ...nargs,
         method_path : [ ...nargs.method_path ],
         method_args : [ ... args             ],
@@ -78,7 +78,7 @@ function create_callapi_bridge( __nargs ) {
           method_path : [ ...(nargs.method_path) ],
         });
       } else {
-        return create_callapi_bridge({
+        return create_callapi({
           ...nargs,
           method_path : [ ...(nargs.method_path), prop ],
         });
@@ -87,6 +87,6 @@ function create_callapi_bridge( __nargs ) {
   });
 }
 
-module.exports.create_callapi_bridge = create_callapi_bridge;
+module.exports.create_callapi = create_callapi;
 
 

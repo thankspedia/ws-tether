@@ -16,11 +16,6 @@ function createContext() {
   }
 }
 
-const __callapi =(...args)=>{
-  console.log( 'callapi', ...args );
-  return args;
-};
-
 
 describe( '', ()=>{
   it('as test1', async()=>{

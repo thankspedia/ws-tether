@@ -1,13 +1,13 @@
 
-const { create_callapi_bridge } = require( './callapi-bridge' );
-const { create_error_callapi  } = require( './error-callapi' );
+const { create_callapi         } = require( './callapi.js' );
+const { create_error_callapi_handler  } = require( './error-callapi' );
 
 function createErrorContext( nargs ) {
   if ( ! ( 'error_message' in  nargs ) ) {
     throw new Error( 'error_message is not specified' );
   }
-  const callapi = create_error_callapi( nargs.error_message );
-  return create_callapi_bridge({ ...nargs, callapi });
+  const callapi_handler = create_error_callapi_handler( nargs.error_message );
+  return create_callapi({ ...nargs, callapi_handler });
 }
 module.exports.createContext = createErrorContext;
 

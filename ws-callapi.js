@@ -1,6 +1,6 @@
 
 
-function websocket_callapi( nargs ) {
+function websocket_callapi_handler( nargs ) {
   const {
     websocket                  = ((v)=>{ throw new Error(`${v} is not specified`) })( 'websocket' ),
     method_path                = ((v)=>{ throw new Error(`${v} is not specified`) })( 'method_path' ),
@@ -8,7 +8,7 @@ function websocket_callapi( nargs ) {
   } = nargs;
 
   if ( 1<=method_path.length && method_path[0] === 'websocket' ) {
-    console.log( 'websocket_callapi','6yvjkMQ7s9Q', { method_path, method_path } );
+    console.log( 'websocket_callapi_handler','6yvjkMQ7s9Q', { method_path, method_path } );
     if ( method_path.length === 1 ) {
       return ({
         status : 'succeeded',
@@ -35,7 +35,7 @@ function websocket_callapi( nargs ) {
         method_args,
       },
     };
-    console.log( 'websocket_callapi','2esIyrlhAi8', value );
+    console.log( 'websocket_callapi_handler','2esIyrlhAi8', value );
 
     websocket.send( JSON.stringify( value ) );
     return {
@@ -47,4 +47,4 @@ function websocket_callapi( nargs ) {
 
 }
 
-module.exports.websocket_callapi = websocket_callapi;
+module.exports.websocket_callapi_handler = websocket_callapi_handler;

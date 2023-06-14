@@ -1,10 +1,10 @@
 
 const { WebSocketServer } = require( 'ws' );
 const { parse } = require( 'url');
-const { respapi } = require( 'asynchronous-context-backend/respapi' );
+const { respapi } = require( './respapi.js' );
 const { trace_validator }  = require( 'vanilla-schema-validator' );
-const { create_callapi_bridge } = require( './callapi-bridge' );
-const { websocket_callapi } = require( './ws-callapi' );
+const { create_callapi } = require( './callapi.js' );
+const { websocket_callapi_handler } = require( './ws-callapi' );
 
 const { schema } = require( 'vanilla-schema-validator' );
 const t_respapi_message = schema.compile`
@@ -20,19 +20,8 @@ const t_respapi_message = schema.compile`
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 
 
-/*
- * not used
- */
-function createRespapiWithWebsocket( websocket, on_init_websocket ) {
-  websocket.on( 'open', ()=>{
-    return on_init_websocket( websocket );
-  });
-}
-module.exports.createRespapiWithWebsocket = createRespapiWithWebsocket;
 
-
-
-function createWebSocketUpgrader( on_init_websocket ) {
+function create_websocket_upgrader( on_init_websocket ) {
   const wss = new WebSocketServer({ noServer: true });
 
   wss.on( 'connection', (websocket, req )=>{
@@ -45,23 +34,30 @@ function createWebSocketUpgrader( on_init_websocket ) {
     });
   };
 }
-module.exports.createWebSocketUpgrader = createWebSocketUpgrader;
+module.exports.create_websocket_upgrader = create_websocket_upgrader;
 
 
-const createMultipleWebSocketUpgrader = ( mapper )=>{
-  return async function handle_upgrade(request, socket, head) {
-    const { pathname } = parse( request.url );
-    console.log( 'handle_upgrade : ', pathname );
-    if ( pathname in mapper ) {
-      console.log( `handle_upgrade on [${pathname}]` );
-      await mapper[ pathname ]( request, socket, head )
-    } else {
-      console.log( `failed to 'handle_upgrade' on [${pathname}]` );
-      socket.destroy();
-    }
-  };
+const handle_multi_path_upgrade = ( mapper, request, socket, head )=>{
+  const { pathname } = parse( request.url );
+  console.log( 'handle_upgrade : ', pathname );
+  if ( pathname in mapper ) {
+    console.log( `handle_upgrade on [${pathname}]` );
+    mapper[ pathname ]( request, socket, head )
+  } else {
+    console.log( `failed to 'handle_upgrade' on [${pathname}]` );
+    socket.destroy();
+  }
 };
-module.exports.createMultipleWebSocketUpgrader = createMultipleWebSocketUpgrader;
+
+module.exports.handle_multi_path_upgrade = handle_multi_path_upgrade;
+
+
+const create_multi_path_upgrade_handler = (mapper)=>(
+  function handle_upgrade( request, socket, head ) {
+    return handle_multi_path_upgrade( mapper, request, socket, head );
+  }
+);
+module.exports.create_multi_path_upgrade_handler = create_multi_path_upgrade_handler;
 
 
 
@@ -83,8 +79,141 @@ const get_authentication_token = (req)=>{
   }
 };
 
+async function handle_on_init_of_ws_backend( nargs ) {
+  const {
+    event_handlers  = {},
+    context         = ((name)=>{throw new Error(`${name} is not defined`)})('context'),
+    websocket       = ((name)=>{throw new Error(`${name} is not defined`)})('websocket'),
+    req             = null,
+  } = nargs;
 
-function createAsyncContextWebsocketInitializer( contextFactory, event_handlers ={}) {
+  if ( 'on_init' in event_handlers ) {
+    try {
+      event_handlers.on_init();
+    } catch( e ){
+      console.error('WARNING on_init handler threw an error. ignored. ', e );
+    }
+  }
+};
+
+
+async function handle_on_message_of_ws_backend( nargs ) {
+  const {
+    event_handlers  = {},
+    context         = ((name)=>{throw new Error('${name} is not defined')})('context'),
+    websocket       = ((name)=>{throw new Error('${name} is not defined')})('websocket'),
+    req             = null,
+    data            = ((name)=>{throw new Error('${name} is not defined')})('data'),
+  } = nargs;
+
+  const message = JSON.parse( data.toString() );
+
+  const info = trace_validator( t_respapi_message, message );
+
+  if ( ! info.value ) {
+    throw new Error( 'invalid message' + info.report() );
+  }
+
+
+  context.send_ws_message = async function( value ) {
+    websocket.send( JSON.stringify( value ) );
+  };
+
+  context.frontend = create_callapi({
+    callapi_handler : websocket_callapi_handler,
+    websocket,
+  });
+
+  // COPIED FROM http-middleware
+  /*
+   * The procedure to execute before invocation of the method.
+   */
+  async function context_initializer( resolved_callapi_method ) {
+    this.logger.output({
+      type : 'begin_of_method_invocation',
+      info : {
+        resolved_callapi_method
+      }
+    });
+
+    console.log( 'sZc3Uifcwh0',  resolved_callapi_method );
+
+    // 4) get the current authentication token.
+    if ( ( req ) && ( 'set_user_identity' in this ) ) {
+      const authentication_token = get_authentication_token( req );
+
+      // (Wed, 07 Sep 2022 20:13:01 +0900)
+      await this.set_user_identity( authentication_token );
+    }
+
+    this.setOptions({ showReport : false, coloredReport:true });
+
+    if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
+      console.log( 'ew6pMCEV3o', resolved_callapi_method );
+      this.setOptions({ autoCommit : true });
+
+      console.log( 'ew6pMCEV3o', this.getOptions() );
+    }
+  }
+
+  console.log('AAAAAAAAAAA NO2', req.headers );
+
+  const respapi_result  =
+    await respapi(
+      /* callapi_target */
+      context,
+
+      /* callapi_method_path */
+      message.command_value.method_path,
+
+      /* http-method as TAGS */
+      'WEBSOCKET_METHOD',
+
+      /* on_execution */
+      async ( resolved_callapi_method )=>{
+
+        // (Mon, 05 Jun 2023 20:07:53 +0900)
+        await context_initializer.call( context, resolved_callapi_method );
+
+        /*
+         * Invoking the Resolved Method
+         */
+        const target_method      = resolved_callapi_method.value
+        const target_method_args = message.command_value.method_args;
+        return await (context.executeTransaction( target_method, ... target_method_args ));
+      },
+    );
+
+  console.log( 'received No.1: %s', data );
+  console.log( 'respapi_result', respapi_result );
+  // console.log( 'context.hello_world', await context.hello_world() );
+
+  return context
+}
+
+async function handle_on_error_of_ws_backend( nargs ) {
+  const {
+    event_handlers  = {},
+    // context         = ((name)=>{throw new Error('${name} is not defined')})('context'),
+    // websocket       = ((name)=>{throw new Error('${name} is not defined')})('websocket'),
+    // req             = null,
+    // data            = ((name)=>{throw new Error('${name} is not defined')})('data'),
+  } = nargs;
+
+  console.error(...args);
+
+  if ( 'on_error' in event_handlers ) {
+    try {
+      event_handlers.on_error( ...args );
+    } catch( e ){
+      console.error('WARNING on_error handler threw an error. ignored. ', e );
+    }
+  }
+}
+
+
+
+function create_backend_websocket_initializer( context_factory, event_handlers ={}) {
   return (
 
     /*
@@ -97,119 +226,45 @@ function createAsyncContextWebsocketInitializer( contextFactory, event_handlers 
      */
     async function on_init_websocket( websocket, req ) {
 
+      const context = await context_factory();
+      console.log( 'oMQGOcTggnA' , context );
 
-      const on_error = (...args)=>{
-        console.error(...args);
-        if ( 'on_error' in event_handlers ) {
-          try {
-            event_handlers.on_error( ...args );
-          } catch( e ){
-            console.error('WARNING on_error handler threw an error. ignored. ', e );
+      websocket.on( 'error', ()=>(
+        handle_on_error_of_ws_backend(
+          {
+            event_handlers  ,
+            context         ,
+            websocket       ,
+            req             ,
+            // data            ,
           }
-        }
-      };
-      websocket.on( 'error', on_error );
+        )
+      ));
 
-      const on_message = async (data)=>{
-
-        const message = JSON.parse( data.toString() );
-
-        const info = trace_validator( t_respapi_message, message );
-
-        if ( ! info.value ) {
-          throw new Error( 'invalid message' + info.report() );
-        }
-
-        const context = await contextFactory();
-
-        context.send_ws_message = async function( value ) {
-          websocket.send( JSON.stringify( value ) );
-        };
-
-        context.frontend = create_callapi_bridge({
-          callapi : websocket_callapi,
-          websocket,
-        });
-
-        // COPIED FROM http-middleware
-        /*
-         * The procedure to execute before invocation of the method.
-         */
-        async function context_initializer( resolved_callapi_method ) {
-          this.logger.output({
-            type : 'begin_of_method_invocation',
-            info : {
-              resolved_callapi_method
-            }
-          });
-
-          console.log( 'sZc3Uifcwh0',  resolved_callapi_method );
-
-          // 4) get the current authentication token.
-          if ( ( req ) && ( 'set_user_identity' in this ) ) {
-            const authentication_token = get_authentication_token( req );
-
-            // (Wed, 07 Sep 2022 20:13:01 +0900)
-            await this.set_user_identity( authentication_token );
+      websocket.on( 'message', async (data)=>(
+        handle_on_message_of_ws_backend(
+          {
+            event_handlers  ,
+            context         ,
+            websocket       ,
+            req             ,
+            data            ,
           }
+        )
+      ));
 
-          this.setOptions({ showReport : false, coloredReport:true });
-
-          if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
-            console.log( 'ew6pMCEV3o', resolved_callapi_method );
-            this.setOptions({ autoCommit : true });
-
-            console.log( 'ew6pMCEV3o', this.getOptions() );
-          }
+      handle_on_init_of_ws_backend(
+        {
+          event_handlers  ,
+          context         ,
+          websocket       ,
+          req             ,
+          // data            ,
         }
-
-        console.log('AAAAAAAAAAA NO2', req.headers );
-
-        const respapi_result  =
-          await respapi(
-            /* callapi_target */
-            context,
-
-            /* callapi_method_path */
-            message.command_value.method_path,
-
-            /* http-method as TAGS */
-            'WEBSOCKET_METHOD',
-
-            /* on_execution */
-            async ( resolved_callapi_method )=>{
-
-              // (Mon, 05 Jun 2023 20:07:53 +0900)
-              await context_initializer.call( context, resolved_callapi_method );
-
-              /*
-               * Invoking the Resolved Method
-               */
-              const target_method      = resolved_callapi_method.value
-              const target_method_args = message.command_value.method_args;
-              return await (context.executeTransaction( target_method, ... target_method_args ));
-            },
-          );
-
-        console.log( 'received No.1: %s', data );
-        console.log( 'respapi_result', respapi_result );
-        console.log( 'context.hello_world', await context.hello_world() );
-
-        return context
-      };
-
-      websocket.on( 'message', on_message );
-
-      if ( 'on_init' in event_handlers ) {
-        try {
-          event_handlers.on_init();
-        } catch( e ){
-          console.error('WARNING on_init handler threw an error. ignored. ', e );
-        }
-      }
+      )
     }
   );
 }
-module.exports.createAsyncContextWebsocketInitializer = createAsyncContextWebsocketInitializer;
+module.exports.create_backend_websocket_initializer = create_backend_websocket_initializer;
 
 

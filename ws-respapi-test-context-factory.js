@@ -23,13 +23,8 @@ class Hello extends AsyncContext {
 }
 
 Hello.defineMethod(
-  async function ws_hello_world() {
-    setTimeout( ()=>{
-      this.send_ws_message({
-        message : 'shutdown immediately',
-      });
-    },500);
-    return 'hello world !!';
+  async function how_are_you(a,b,c) {
+    await this.frontend.fine_thank_you( a+1, b+1, c+1 );
   },
   METHOD_POST,
   'WEBSOCKET_METHOD',

@@ -1,10 +1,10 @@
 
-const { create_callapi_bridge } = require( './callapi-bridge' );
-const { dummy_callapi         } = require( './dummy-callapi' );
+const { create_callapi } = require( './callapi.js' );
+const { dummy_callapi_handler } = require( './dummy-callapi' );
 
 function createDummyContext( nargs ) {
-  const callapi = dummy_callapi;
-  return create_callapi_bridge({ ...nargs, callapi });
+  const callapi_handler = dummy_callapi_handler;
+  return create_callapi({ ...nargs, callapi_handler });
 }
 module.exports.createContext = createDummyContext;
 

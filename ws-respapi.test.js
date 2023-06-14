@@ -7,12 +7,34 @@ const { test, describe, it, before, after }  = require( 'node:test' );
 const { AsyncContext } = require( 'asynchronous-context' );
 const { METHOD_POST  } = require( 'asynchronous-context-backend' );
 
+const { schema, trace_validator } = require( 'vanilla-schema-validator' );
+const { create_callapi } = require( './callapi.js' );
+const { websocket_callapi_handler } = require( './ws-callapi' );
+const { create_websocket, await_websocket, await_sleep } = require( './ws-utils.js' );
+const { set_typesafe_tags } = require( 'runtime-typesafety' );
+const { respapi } = require( './respapi.js' );
+
+const {
+  asyncCreateWebsocketServerContext,
+} = require( './ws-callapi-context-factory' );
+
+const t_respapi_message = schema.compile`
+  object(
+    command_type : string(),
+    command_value : object(
+      method_path : array_of( string() ),
+      method_args : array_of( any() ),
+    ),
+  )
+`();
+
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
 }
 
-class Hello extends AsyncContext {
+class HelloWorld extends AsyncContext {
   constructor(event_handlers){
+    super();
     this.event_handlers = event_handlers;
   }
   hello = p({
@@ -30,7 +52,7 @@ class Hello extends AsyncContext {
   });
 }
 
-Hello.defineMethod(
+HelloWorld.defineMethod(
   async function ws_hello_world() {
     setTimeout( ()=>{
       this.send_ws_message({
@@ -45,50 +67,161 @@ Hello.defineMethod(
     unprotected_output : true,
   }
 );
-
+HelloWorld.defineMethod(
+  async function start() {
+    await this.backend.hello_world();
+  },
+  'WEBSOCKET_METHOD',
+  {
+    unprotected_output : true,
+  }
+);
 
 function createContext(...args) {
-  return Hello.create(...args);
+  return HelloWorld.create(...args);
 }
-const {
-  asyncCreateWebsocketServerContext,
-} = require( './ws-callapi-context-factory' );
 
-async function asyncCreateContext(...args) {
-  return asyncCreateWebsocketServerContext(
-    'ws://localhost:3001/foo',
-    ()=>createContext(...args)
-  );
+
+const t_handle_message = schema.compile`
+  object(
+    context   : object(),
+    websocket : object(),
+    data      : object(),
+  ),
+`();
+
+async function handle_websocket_message( nargs ) {
+  {
+    const info = trace_validator( t_handle_message, nargs );
+    if ( ! info.value ) {
+      throw new Error( 'invalid args ' + info.report() );
+    }
+  }
+
+  const {
+    context,
+    websocket,
+    data,
+
+  } = nargs;
+
+  const message = JSON.parse( data.toString() );
+  {
+    const info = trace_validator( t_respapi_message, message );
+    if ( ! info.value ) {
+      throw new Error( 'invalid message' + info.report() );
+    }
+  }
+
+
+  const respapi_result  =
+    await respapi(
+      /* callapi_target */
+      context,
+
+      /* callapi_method_path */
+      message.command_value.method_path,
+
+      /* http-method as TAGS */
+      'WEBSOCKET_METHOD',
+
+      /* on_execution */
+      async ( resolved_callapi_method )=>{
+
+        // (Mon, 05 Jun 2023 20:07:53 +0900)
+        // await context_initializer.call( context, resolved_callapi_method );
+
+        /*
+         * Invoking the Resolved Method
+         */
+        const target_method      = resolved_callapi_method.value
+        const target_method_args = message.command_value.method_args;
+        return await (context.executeTransaction( target_method, ... target_method_args ));
+      },
+    );
+
+  console.log( 'received No.1: %s', data );
+  console.log( 'respapi_result', respapi_result );
+  // console.log( 'context.hello_world', await context.hello_world() );
+
+  return context
+
 }
+
+
+/*
+ * See :
+ * ```
+ *    const { create_backend_websocket_initializer } = require( './ws-middleware' );
+ * ```
+ */
+
+function on_init_websocket( websocket, context ) {
+  websocket.on( 'message', (data)=>{
+    return handle_websocket_message({
+      context,
+      websocket,
+      data,
+    });
+  });
+  websocket.on( 'error', (...args)=>{
+    console.error( ...args );
+  });
+}
+
 
 describe( ()=>{
   it('as test1', async()=>{
-    const p = new Promise( async (resolve,reject)=>{
-      await asyncCreateContext({
-        on_open : (context)=>{
-        },
-        on_done : (context)=>{
-          resolve();
-        },
-      });
 
-      setTimeout( ()=>{
-      }, 1000 );
+    class Hello extends AsyncContext {
+      constructor(event_handlers){
+        super();
+        this.event_handlers = event_handlers;
+      }
+    }
 
-      setTimeout( ()=>{
-        // reject( new Error('timeout'))
-        reject( new Error('not implemented'))
-      }, 3000 );
+    Hello.defineMethod(
+      async function fine_thank_you(...args) {
+        console.log( 'hooray!' , ...args );
+        await this.backend.how_are_you(...args);
+      },
+      'WEBSOCKET_METHOD',
+      {
+        unprotected_output : true,
+      }
+    );
 
-      // await context.say_hello();
+    Hello.defineMethod(
+      async function start() {
+        await this.backend.how_are_you(1,2,3);
+      },
+      'WEBSOCKET_METHOD',
+      {
+        unprotected_output : true,
+      }
+    );
+
+    const websocket = create_websocket( 'ws://localhost:3001/foo' );
+
+    const context = Hello.create();
+    context.backend = create_callapi({
+      callapi_handler : websocket_callapi_handler,
+      websocket,
     });
 
-    return await p;
+    on_init_websocket( websocket, context );
+    await await_websocket( websocket );
+
+    await context.start();
+    await await_sleep( 1000 );
+    websocket.close();
+
   });
+
 
 //  it('as test2', async()=>{
 //    const p = new Promise( async (resolve,reject)=>{
-//      const { context } = await asyncCreateContext();
+//      const { context } = await on_init_websocket();
 //      const websocket = (await context.websocket() );
 //      const close = ()=>websocket.close();
 //
