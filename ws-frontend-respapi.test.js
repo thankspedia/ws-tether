@@ -19,10 +19,6 @@ const {
  on_init_websocket,
 } = require( './ws-frontend-respapi.js' );
 
-const {
-  asyncCreateWebsocketServerContext,
-} = require( './ws-callapi-context-factory' );
-
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );

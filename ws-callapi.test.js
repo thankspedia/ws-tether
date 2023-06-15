@@ -2,20 +2,17 @@
 require( 'dotenv' ).config();
 
 const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after }  = require( 'node:test' );
+const { test, describe, it, before, after } = require( 'node:test' );
+const { createContext: __createContext } = require( './ws-frontend-callapi-context-factory' );
 
-const {
-  asyncCreateWebsocketClientContext,
-} = require( './ws-callapi-context-factory' );
-
-async function asyncCreateContext() {
-  return asyncCreateWebsocketClientContext( 'ws://localhost:3001/foo' );
+async function createContext() {
+  return await __createContext( 'ws://localhost:3001/foo' );
 }
 
 describe( ()=>{
   it('as test1', async()=>{
     const p = new Promise( async (resolve,reject)=>{
-      const { context } = await asyncCreateContext();
+      const { context } = await createContext();
       const websocket = (await context.websocket() );
       const close = ()=>websocket.close();
 
@@ -43,7 +40,7 @@ describe( ()=>{
 
   it('as test2', async()=>{
     const p = new Promise( async (resolve,reject)=>{
-      const { context } = await asyncCreateContext();
+      const { context } = await createContext();
       const websocket = (await context.websocket() );
       const close = ()=>websocket.close();
 
@@ -74,7 +71,7 @@ describe( ()=>{
   // it('as test3', async()=>{
   //   await assert.rejects((async()=>{
   //     try {
-  //       const context = await asyncCreateContext();
+  //       const context = await createContext();
   //       await (context.hello2.world.foo.bar.baz({hello:'hello world'}));
   //     } catch ( e ) {
   //       console.log( 'expected exception', e );
@@ -87,7 +84,7 @@ describe( ()=>{
   // it('as test4', async()=>{
   //   await assert.doesNotReject( async()=>{
   //     try {
-  //       const context = await asyncCreateContext();
+  //       const context = await createContext();
   //       const result = await context.multiple(1,2,3,4);
   //       assert.deepEqual( result, [1,2,3,4]);
   //     } catch ( e ) {

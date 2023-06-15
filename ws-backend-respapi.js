@@ -13,13 +13,24 @@ const { websocket_callapi_handler } = require( './ws-callapi' );
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 
+/*
+ * function on_init_websocket( websocket, req ) {
+ *    // ...
+ * }
+ *
+ * websocket : an argument to specify a websocket instance from
+ *             websocket/ws module.
+ *
+ * req       : an optional argument to specify request header object from
+ *             the common Request object.
+ *
+ *             https://developer.mozilla.org/en-US/docs/Web/API/Headers
+ */
 function create_websocket_upgrader( on_init_websocket ) {
   const wss = new WebSocketServer({ noServer: true });
-
-  wss.on( 'connection', (websocket, req )=>{
+  wss.on( 'connection', ( websocket, req )=>{
     return on_init_websocket( websocket, req );
   });
-
   return ( request, socket, head )=>{
     wss.handleUpgrade( request, socket, head, function done(websocket) {
       wss.emit('connection', websocket, request);
@@ -202,60 +213,58 @@ async function handle_on_error_of_ws_backend( nargs ) {
   }
 }
 
+async function on_init_websocket_for_backend( nargs ) {
+  const {
+    context_factory = ((name)=>{ throw new Error( `${name} is not defined` ) } )('context_factory'),
+    event_handlers  = {} ,
+    websocket       = ((name)=>{ throw new Error( `${name} is not defined` ) } )('websocket'),
+    req             = ((name)=>{ throw new Error( `${name} is not defined` ) } )('websocket'),
+  } = nargs;
 
+  const context = await context_factory();
+  console.log( 'oMQGOcTggnA' , context );
 
-function create_backend_websocket_initializer( context_factory, event_handlers ={}) {
-  return (
+  websocket.on( 'error', ()=>(
+    handle_on_error_of_ws_backend(
+      {
+        event_handlers  ,
+        context         ,
+        websocket       ,
+        req             ,
+        // data            ,
+      }
+    )
+  ));
 
-    /*
-     * websocket : an argument to specify a websocket instance from
-     *             websocket/ws module.
-     * req       : an optional argument to specify request header object from
-     *             the common Request object.
-     *
-     *             https://developer.mozilla.org/en-US/docs/Web/API/Headers
-     */
-    async function on_init_websocket( websocket, req ) {
+  websocket.on( 'message', async (data)=>(
+    handle_on_message_of_ws_backend(
+      {
+        event_handlers  ,
+        context         ,
+        websocket       ,
+        req             ,
+        data            ,
+      }
+    )
+  ));
 
-      const context = await context_factory();
-      console.log( 'oMQGOcTggnA' , context );
-
-      websocket.on( 'error', ()=>(
-        handle_on_error_of_ws_backend(
-          {
-            event_handlers  ,
-            context         ,
-            websocket       ,
-            req             ,
-            // data            ,
-          }
-        )
-      ));
-
-      websocket.on( 'message', async (data)=>(
-        handle_on_message_of_ws_backend(
-          {
-            event_handlers  ,
-            context         ,
-            websocket       ,
-            req             ,
-            data            ,
-          }
-        )
-      ));
-
-      handle_on_init_of_ws_backend(
-        {
-          event_handlers  ,
-          context         ,
-          websocket       ,
-          req             ,
-          // data            ,
-        }
-      )
+  handle_on_init_of_ws_backend(
+    {
+      event_handlers  ,
+      context         ,
+      websocket       ,
+      req             ,
+      // data            ,
     }
-  );
+  )
 }
-module.exports.create_backend_websocket_initializer = create_backend_websocket_initializer;
+module.exports.on_init_websocket_for_backend = on_init_websocket_for_backend;
+
+
+
+
+
+
+
 
 

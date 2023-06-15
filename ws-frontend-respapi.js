@@ -85,7 +85,7 @@ module.exports.handle_on_message_of_ws_frontend = handle_on_message_of_ws_fronte
 /*
  * See :
  * ```
- *    const { create_backend_websocket_initializer } = require( './ws-middleware' );
+ *    const { on_init_websocket_for_backend } = require( './ws-middleware' );
  * ```
  */
 
