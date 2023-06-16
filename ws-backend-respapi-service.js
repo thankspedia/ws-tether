@@ -46,6 +46,7 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
   return (
     async ()=>{
       const services = [];
+      const sockets = new Set();
       return ports.map(
         port=>(
           {
@@ -60,6 +61,24 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
                           console.log( 'ws-server opened', 'C3FXWHjYwU0' );
                         }
                       );
+
+                      server.on( 'error', (e)=>{
+                        console.error( 'server-error', e );
+                      })
+
+                      server.on( 'connection', (socket)=>{
+                        console.log( 'sZYTMC4A0I', 'connection');
+
+                        sockets.add( socket );
+
+                        socket.on( 'close', ()=>{
+                          console.log( 'sZYTMC4A0I', 'socket.close()' );
+                        })
+
+                        socket.on( 'data', ()=>{
+                          console.log( 'sZYTMC4A0I', 'socket.data()' );
+                        })
+                      });
                       server.on( 'upgrade', handle_upgrade );
                       return wrap(server);
                     }
@@ -70,7 +89,6 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
             },
 
             stop() {
-              console.log( 'ws-server closed 2', 'C3FXWHjYwU0' );
               services.forEach( e=>e.close(
                 (e)=>{
                   if ( e ) {
@@ -82,6 +100,11 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
               ));
               services.length = 0;
               console.log('nTPf8R8RExE', {services} );
+
+              console.log( 'ws-server closed 2', 'C3FXWHjYwU0' );
+              for ( const i of sockets.values() ) {
+                i.destroy();
+              }
             },
           }
         )
