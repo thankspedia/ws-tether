@@ -19,64 +19,88 @@ const {
  on_init_websocket,
 } = require( './ws-frontend-respapi.js' );
 
-
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
 }
 
-class HelloWorld extends AsyncContext {
-  constructor(event_handlers){
-    super();
-    this.event_handlers = event_handlers;
-  }
-  hello = p({
-    world : p({
-      foo : p({
-        bar : p({
-          baz : p(async (...args)=>{
-            this.send_ws_message({
-              message : [ 'okay', ...args ],
-            });
+describe( async ()=>{
+  const test_state = {
+    __service : null,
+  };
+
+  before( async()=>{
+    function p(o) {
+      return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
+    }
+    class Hello extends AsyncContext {
+      hello = p({
+        world : p({
+          foo : p({
+            bar : p({
+              baz : p(async (...args)=>{
+                this.send_ws_message({
+                  message : [ 'okay', ...args ],
+                });
+              }),
+            }),
           }),
         }),
-      }),
-    }),
-  });
-}
-
-HelloWorld.defineMethod(
-  async function ws_hello_world() {
-    setTimeout( ()=>{
-      this.send_ws_message({
-        message : 'shutdown immediately',
       });
-    },500);
-    return 'hello world !!';
-  },
-  METHOD_POST,
-  'WEBSOCKET_METHOD',
-  {
-    unprotected_output : true,
-  }
-);
-HelloWorld.defineMethod(
-  async function start() {
-    await this.backend.hello_world();
-  },
-  'WEBSOCKET_METHOD',
-  {
-    unprotected_output : true,
-  }
-);
+    }
 
-function createContext(...args) {
-  return HelloWorld.create(...args);
-}
+    Hello.defineMethod(
+      async function how_are_you(a,b,c) {
+        await this.frontend.fine_thank_you( a+1, b+1, c+1 );
+      },
+      METHOD_POST,
+      'WEBSOCKET_METHOD',
+      {
+        unprotected_output : true,
+      }
+    );
+    function create_context() {
+      return Hello.create();
+    }
+
+    test_state.__service =
+      require( './ws-backend-respapi-service.js' ).start_service_for_ws_backend({
+        create_context,
+        event_handlers : {},
+        path : '/foo',
+        ports : [3632],
+      });
+
+    await await_sleep(1000);
+  });
+
+  after(async ()=>{
+    try {
+      test_state.__service.shutdown();
+    } catch ( e ) {
+      console.error(e);
+    }
+
+    console.log('after','ZqAyat5UOs');
+
+    // process.exit(0);
+  });
+
+  process.on('beforeExit', (code) => {
+    console.log('CcvcXZMz9UE','Process beforeExit event with code: ', code);
+  });
+  process.on('unhandledRejection', (reason, promise) => {
+    console.log('CcvcXZMz9UE','Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+  process.on('uncaughtExceptionMonitor', (err, origin) => {
+    console.log('CcvcXZMz9UE',err, origin);
+  });
+  process.on('uncaughtException', (err, origin) => {
+    console.log('CcvcXZMz9UE',err, origin);
+  });
 
 
-
-describe( ()=>{
-  it('as test1', async()=>{
+  it('as test1',{skip:false,},async()=>{
+    let flag_succeded = false;
 
     class Hello extends AsyncContext {
       constructor(event_handlers){
@@ -88,7 +112,10 @@ describe( ()=>{
     Hello.defineMethod(
       async function fine_thank_you(...args) {
         console.log( 'hooray!' , ...args );
-        await this.backend.how_are_you(...args);
+        flag_succeded = true;
+        websocket.close();
+        test_state.__service.shutdown();
+        // await this.backend.how_are_you(...args);
       },
       'WEBSOCKET_METHOD',
       {
@@ -106,7 +133,7 @@ describe( ()=>{
       }
     );
 
-    const websocket = create_websocket( 'ws://localhost:3001/foo' );
+    const websocket = create_websocket( 'ws://localhost:3632/foo' );
 
     const context = Hello.create();
     context.backend = create_callapi({
@@ -119,7 +146,24 @@ describe( ()=>{
 
     await context.start();
     await await_sleep( 1000 );
-    websocket.close();
+
+    assert.ok( flag_succeded, 'failed' );
+
+    console.log( 'websocket.close()');
+
+    try {
+      console.log( 'shutdown1' );
+      websocket.close();
+    } catch ( e) {
+      console.log(e);
+    }
+
+    try {
+      console.log( 'shutdown2' );
+      test_state.__service.shutdown();
+    } catch ( e) {
+      console.log(e);
+    }
 
   });
 

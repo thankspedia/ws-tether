@@ -107,7 +107,6 @@ async function handle_on_message_of_ws_backend( nargs ) {
     req             = null,
     data            = ((name)=>{throw new Error('${name} is not defined')})('data'),
   } = nargs;
-
   const message = JSON.parse( data.toString() );
 
   const info = trace_validator( t_respapi_message, message );
@@ -115,7 +114,6 @@ async function handle_on_message_of_ws_backend( nargs ) {
   if ( ! info.value ) {
     throw new Error( 'invalid message' + info.report() );
   }
-
 
   context.send_ws_message = async function( value ) {
     websocket.send( JSON.stringify( value ) );
@@ -215,14 +213,13 @@ async function handle_on_error_of_ws_backend( nargs ) {
 
 async function on_init_websocket_for_backend( nargs ) {
   const {
-    context_factory = ((name)=>{ throw new Error( `${name} is not defined` ) } )('context_factory'),
+    create_context = ((name)=>{ throw new Error( `${name} is not defined` ) } )('create_context'),
     event_handlers  = {} ,
     websocket       = ((name)=>{ throw new Error( `${name} is not defined` ) } )('websocket'),
     req             = ((name)=>{ throw new Error( `${name} is not defined` ) } )('websocket'),
   } = nargs;
 
-  const context = await context_factory();
-  console.log( 'oMQGOcTggnA' , context );
+  const context = await create_context();
 
   websocket.on( 'error', ()=>(
     handle_on_error_of_ws_backend(

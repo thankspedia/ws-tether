@@ -6,6 +6,7 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
   let modifiedTime = new Date().getTime();
   let processed    = true;
   let __filename = '';
+  let handle = -1;
 
   // throttling the file change events.
   {
@@ -23,20 +24,27 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
   }
 
   {
-    setInterval( async ()=>{
+    handle = setInterval( async ()=>{
       try {
+        console.log(`[fs-watchdog] checking`);
         const now = new Date().getTime();
         if ( processed && ( 101 < (now - modifiedTime) ) ) {
-          console.log(`[asynchronous-context-backend] ${__filename} file Changed`);
+          console.log(`[fs-watchdog] ${__filename} file Changed`);
           processed = false;
           // `onDetected` function can be either async or non-async.
           await onDetected();
         }
       } catch (e) {
-        console.error( '[asynchronous-context-backend] could not start specified services : ',e);
+        console.error( '[fs-watchdog] could not start specified services : ',e);
       }
     },100);
   }
+  return {
+    shutdown : ()=>{
+      console.log( 'shutdown the watchdog' );
+      clearInterval( handle );
+    },
+  };
 }
 
 module.exports.startFileSytemWatchdog = startFileSytemWatchdog;

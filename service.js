@@ -40,7 +40,30 @@ function startService( __createService ) {
     serverList.forEach( e=>e.start() );
   };
 
-  startFileSytemWatchdog( asyncRestartServices, './' );
+  const asyncShutdownServices = async ()=>{
+    console.log( '[asynchronous-context-backend] stop the service.' );
+    serverList.forEach( e=>e.stop() );
+    serverList.length = 0;
+  };
+
+  const watchdog =
+    startFileSytemWatchdog( asyncRestartServices, './' );
+
+  return {
+    shutdown : ()=>{
+      try{
+        asyncShutdownServices();
+      } catch (e){
+        console.error(e);
+      }
+      try{
+        watchdog.shutdown();
+      } catch (e){
+        console.error(e);
+      }
+    },
+    restart  : asyncRestartServices,
+  };
 }
 module.exports.startService = startService;
 
