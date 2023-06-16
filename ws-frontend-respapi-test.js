@@ -16,7 +16,7 @@ const {
  t_handle_message,
  t_respapi_message,
  handle_on_message_of_ws_frontend,
- on_init_websocket,
+ on_init_websocket_of_ws_frontend_respapi,
 } = require( './ws-frontend-respapi.js' );
 
 function p(o) {
@@ -24,82 +24,14 @@ function p(o) {
 }
 
 describe( async ()=>{
-  const test_state = {
-    __service : null,
-  };
 
-  before( async()=>{
-    function p(o) {
-      return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
-    }
-    class Hello extends AsyncContext {
-      hello = p({
-        world : p({
-          foo : p({
-            bar : p({
-              baz : p(async (...args)=>{
-                this.send_ws_message({
-                  message : [ 'okay', ...args ],
-                });
-              }),
-            }),
-          }),
-        }),
-      });
-    }
-
-    Hello.defineMethod(
-      async function how_are_you(a,b,c) {
-        await this.frontend.fine_thank_you( a+1, b+1, c+1 );
-      },
-      METHOD_POST,
-      'WEBSOCKET_METHOD',
-      {
-        unprotected_output : true,
-      }
-    );
-    function create_context() {
-      return Hello.create();
-    }
-
-    test_state.__service =
-      require( './ws-backend-respapi-service.js' ).start_service_for_ws_backend({
-        create_context,
-        event_handlers : {},
-        path : '/foo',
-        ports : [3632],
-      });
-
-    await await_sleep(1000);
+  before(async()=>{
   });
 
   after(async ()=>{
-    try {
-      test_state.__service.shutdown();
-    } catch ( e ) {
-      console.error(e);
-    }
-
-    console.log('after','ZqAyat5UOs');
-
-    // process.exit(0);
   });
 
-  process.on('beforeExit', (code) => {
-    console.log('CcvcXZMz9UE','Process beforeExit event with code: ', code);
-  });
-  process.on('unhandledRejection', (reason, promise) => {
-    console.log('CcvcXZMz9UE','Unhandled Rejection at:', promise, 'reason:', reason);
-  });
-  process.on('uncaughtExceptionMonitor', (err, origin) => {
-    console.log('CcvcXZMz9UE',err, origin);
-  });
-  process.on('uncaughtException', (err, origin) => {
-    console.log('CcvcXZMz9UE',err, origin);
-  });
-
-
-  it('as test1',{skip:false,},async()=>{
+  it('as test1', async()=>{
     let flag_succeded = false;
 
     class Hello extends AsyncContext {
@@ -114,7 +46,7 @@ describe( async ()=>{
         console.log( 'hooray!' , ...args );
         flag_succeded = true;
         websocket.close();
-        test_state.__service.shutdown();
+        // test_state.__service.shutdown();
         // await this.backend.how_are_you(...args);
       },
       'WEBSOCKET_METHOD',
@@ -141,7 +73,7 @@ describe( async ()=>{
       websocket,
     });
 
-    on_init_websocket( websocket, context );
+    on_init_websocket_of_ws_frontend_respapi( websocket, context );
     await await_websocket( websocket );
 
     await context.start();
@@ -160,7 +92,7 @@ describe( async ()=>{
 
     try {
       console.log( 'shutdown2' );
-      test_state.__service.shutdown();
+      // test_state.__service.shutdown();
     } catch ( e) {
       console.log(e);
     }
@@ -170,7 +102,7 @@ describe( async ()=>{
 
 //  it('as test2', async()=>{
 //    const p = new Promise( async (resolve,reject)=>{
-//      const { context } = await on_init_websocket();
+//      const { context } = await on_init_websocket_of_ws_frontend_respapi();
 //      const websocket = (await context.websocket() );
 //      const close = ()=>websocket.close();
 //

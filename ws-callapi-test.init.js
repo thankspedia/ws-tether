@@ -1,6 +1,6 @@
 
 {
-  require( 'asynchronous-context/settings' ).filenameOfSettings( 'ws-backend-respapi-test-context-factory.settings.json' );
+  require( 'asynchronous-context/settings' ).filenameOfSettings( 'ws-callapi-test-context-factory.settings.json' );
 }
 
 {

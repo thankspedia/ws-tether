@@ -2,8 +2,13 @@ const { AsyncContext }      = require( 'asynchronous-context' );
 const { set_typesafe_tags } = require( 'runtime-typesafety' );
 const { middleware, METHOD_POST } = require( './http-middleware' );
 
+/*
+ * duplicated on
+ * (Fri, 16 Jun 2023 11:35:26 +0900)
+ */
+
 function p(o) {
-  return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
+  return set_typesafe_tags( o, METHOD_POST );
 }
 function q(o) {
   return o;
@@ -14,11 +19,7 @@ class Hello extends AsyncContext {
     world : p({
       foo : p({
         bar : p({
-          baz : p(async (...args)=>{
-            this.send_ws_message({
-              message : [ 'okay', ...args ],
-            });
-
+          baz : p(async function baz() {
             return 'hello world foo bar baz !!!!!!!';
           }),
         }),
@@ -57,36 +58,20 @@ Hello.defineMethod(
       this.send_ws_message({
         message : 'shutdown immediately',
       });
-    },0500);
+    },500);
     return 'hello world !!';
   },
   METHOD_POST,
-  'WEBSOCKET_METHOD',
   {
     unprotected_output : true,
   }
 );
 
 Hello.defineMethod(
-  async function hello_world(...args) {
+  async function hello_world() {
     return 'hello world !!';
   },
   METHOD_POST,
-  'WEBSOCKET_METHOD',
-  {
-    unprotected_output : true,
-  }
-);
-
-Hello.defineMethod(
-  async function say_hello() {
-    this.send_ws_message(
-      "Okay, your request was received."
-    );
-    return 'hello';
-  },
-  METHOD_POST,
-  'WEBSOCKET_METHOD',
   {
     unprotected_output : true,
   }
@@ -105,7 +90,7 @@ Hello.defineMethod(
   async function throw_hello_world() {
     throw new Error( 'hello world !!');
   },
-  'WEBSOCKET_METHOD',
+  METHOD_POST,
   {
     unprotected_output : true,
   }

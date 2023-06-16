@@ -23,7 +23,7 @@ const t_respapi_message = schema.compile`
 module.exports.t_respapi_message = t_respapi_message;
 
 
-async function handle_on_message_of_ws_frontend( nargs ) {
+async function handle_on_message_of_ws_frontend_respapi( nargs ) {
   {
     const info = trace_validator( t_handle_message, nargs );
     if ( ! info.value ) {
@@ -78,20 +78,20 @@ async function handle_on_message_of_ws_frontend( nargs ) {
 
   return context
 }
-module.exports.handle_on_message_of_ws_frontend = handle_on_message_of_ws_frontend;
+module.exports.handle_on_message_of_ws_frontend_respapi = handle_on_message_of_ws_frontend_respapi;
 
 
 
 /*
  * See :
  * ```
- *    const { on_init_websocket_for_backend } = require( './ws-middleware' );
+ *    const { on_init_websocket_of_ws_backend } = require( './ws-middleware' );
  * ```
  */
 
-function on_init_websocket( websocket, context ) {
+function on_init_websocket_of_ws_frontend_respapi( websocket, context ) {
   websocket.on( 'message', (data)=>{
-    return handle_on_message_of_ws_frontend({
+    return handle_on_message_of_ws_frontend_respapi({
       context,
       websocket,
       data,
@@ -101,6 +101,6 @@ function on_init_websocket( websocket, context ) {
     console.error( ...args );
   });
 }
-module.exports.on_init_websocket = on_init_websocket;
+module.exports.on_init_websocket_of_ws_frontend_respapi = on_init_websocket_of_ws_frontend_respapi;
 
 

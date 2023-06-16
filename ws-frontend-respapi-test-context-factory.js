@@ -24,6 +24,10 @@ class Hello extends AsyncContext {
 
 Hello.defineMethod(
   async function how_are_you(a,b,c) {
+    /*
+     * See `ws-backend-respapi.js`.
+     * (Fri, 16 Jun 2023 14:01:43 +0900)
+     */
     await this.frontend.fine_thank_you( a+1, b+1, c+1 );
   },
   METHOD_POST,

@@ -57,7 +57,7 @@ Hello.defineMethod(
       this.send_ws_message({
         message : 'shutdown immediately',
       });
-    },0500);
+    },500);
     return 'hello world !!';
   },
   METHOD_POST,

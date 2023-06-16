@@ -7,9 +7,8 @@ const {
   t_respapi_message,
 } = require( './respapi.js' );
 
-const { trace_validator }  = require( 'vanilla-schema-validator' );
-const { create_callapi } = require( './callapi.js' );
-const { websocket_callapi_handler } = require( './ws-callapi' );
+const { trace_validator } = require( 'vanilla-schema-validator' );
+const { createContext   } = require( './ws-callapi-context-factory.js' );
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 
@@ -119,8 +118,12 @@ async function handle_on_message_of_ws_backend( nargs ) {
     websocket.send( JSON.stringify( value ) );
   };
 
-  context.frontend = create_callapi({
-    callapi_handler : websocket_callapi_handler,
+  /*
+   * This line is tested by `ws-backend-respapi-test.js`
+   * See ws-frontend-respapi-test-context-factory.js
+   * (Fri, 16 Jun 2023 14:09:54 +0900)
+   */
+  context.frontend = createContext({
     websocket,
   });
 
@@ -211,7 +214,7 @@ async function handle_on_error_of_ws_backend( nargs ) {
   }
 }
 
-async function on_init_websocket_for_backend( nargs ) {
+async function on_init_websocket_of_ws_backend( nargs ) {
   const {
     create_context = ((name)=>{ throw new Error( `${name} is not defined` ) } )('create_context'),
     event_handlers  = {} ,
@@ -255,7 +258,7 @@ async function on_init_websocket_for_backend( nargs ) {
     }
   )
 }
-module.exports.on_init_websocket_for_backend = on_init_websocket_for_backend;
+module.exports.on_init_websocket_of_ws_backend = on_init_websocket_of_ws_backend;
 
 
 

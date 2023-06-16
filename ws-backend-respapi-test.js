@@ -31,7 +31,7 @@ describe( 'http-middleware-test', ()=>{
   });
 
   it( 'as no.1' , async()=>{
-    const ws = new WebSocket('ws://localhost:3952/foo');
+    const ws = new WebSocket( 'ws://localhost:3952/foo' );
 
     ws.on('error', (...args)=>{
       console.error('error!', ...args );
@@ -39,9 +39,12 @@ describe( 'http-middleware-test', ()=>{
 
     ws.on('open', function open() {
       setTimeout(()=>{
-        ws.send(JSON.stringify({
-          method_path : [ 'ws_hello_world', ],
-          method_args : [ 1, 2, 3 ],
+        ws.send( JSON.stringify({
+          command_type : "invoke",
+          command_value : {
+            method_path : [ 'ws_hello_world', ],
+            method_args : [ 1, 2, 3 ],
+          },
         }));
       },1000);
     });

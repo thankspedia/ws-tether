@@ -10,13 +10,11 @@ const { loadContextFactory  } = require( './context-factory-loader.js' );
 const {
   create_websocket_upgrader,
   create_multi_path_upgrade_handler,
-  on_init_websocket_for_backend,
+  on_init_websocket_of_ws_backend,
 } = require( './ws-backend-respapi.js' );
 
 const { typecast, schema  } = require( 'vanilla-schema-validator' );
 const { typesafe_function } = require( 'runtime-typesafety' );
-
-const { GracefulShutdownManager } = require('@moebius/http-graceful-shutdown');
 
 const create_service_factory = ( create_app, ports, handle_upgrade )=>{
   create_app = typesafe_function( create_app, {
@@ -28,20 +26,7 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
 
   function wrap(server) {
     return server;
-    console.log( 'qfgknR34HIU','wrap' );
-    const shutdownManager = new GracefulShutdownManager( server );
-    return {
-      server,
-      shutdownManager,
-      close : ()=>{
-        console.log( 'qfgknR34HIU','wrap.close' );
-        shutdownManager.terminate(e=>{
-          console.log('qfgknR34HIU','server is gracefully terminated ');
-        });
-      },
-    };
   }
-
 
   return (
     async ()=>{
@@ -153,7 +138,7 @@ const start_service_for_ws_backend = (nargs)=>{
           [path] : (
             create_websocket_upgrader(
               async function on_init_websocket( websocket, req ) {
-                on_init_websocket_for_backend({ create_context, event_handlers, websocket, req });
+                on_init_websocket_of_ws_backend({ create_context, event_handlers, websocket, req });
               }
             )
           ),
@@ -165,11 +150,30 @@ const start_service_for_ws_backend = (nargs)=>{
 module.exports.start_service_for_ws_backend = start_service_for_ws_backend;
 
 if ( require.main === module ) {
-  start_service_for_ws_backend({
-    create_context,
-    event_handlers,
-    path  : '/foo',
-    ports : [ 3000 ],
-  });
+
+  (async ()=>{
+    const settings = await asyncReadBackendSettings();
+    const {
+      ports               = [ 2000 ],
+      cors_origins        = default_cors_origins,
+      context_factory     = ((name)=>{throw new Error( `${name} is not defined` )})('context_factory'),
+      path                = ((name)=>{throw new Error( `${name} is not defined` )})('path'),
+      purge_require_cache = false,
+    } = settings?.async_context_websocket_backend ?? {};
+
+    const event_handlers = {};
+
+    const create_context = loadContextFactory( context_factory, purge_require_cache );
+
+    start_service_for_ws_backend({
+      create_context,
+      event_handlers,
+      path  ,
+      ports ,
+    });
+  })();
 }
+
+
+
 

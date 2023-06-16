@@ -26,7 +26,7 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
   {
     handle = setInterval( async ()=>{
       try {
-        console.log(`[fs-watchdog] checking`);
+        // console.log(`[fs-watchdog] checking`);
         const now = new Date().getTime();
         if ( processed && ( 101 < (now - modifiedTime) ) ) {
           console.log(`[fs-watchdog] ${__filename} file Changed`);

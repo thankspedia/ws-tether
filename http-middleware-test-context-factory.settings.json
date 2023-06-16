@@ -4,22 +4,12 @@
     "end": true
   },
   "async_context_backend" : {
-    "context_factory" :"./http-middleware-test-context-factory",
+    "context_factory" :"./http-callapi-test-context-factory.js",
     "purge_require_cache" : false,
     "static_paths":[],
     "ports": [ 2003 ],
     "cors_origins" : [
       "http://localhost:2003"
-    ],
-    "end": true
-  },
-  "async_context_websocket_backend" : {
-    "context_factory" :"./http-middleware-test-context-factory",
-    "purge_require_cache" : false,
-    "static_paths":[],
-    "ports": [ 3001 ],
-    "cors_origins" : [
-      "http://localhost:3003"
     ],
     "end": true
   },
