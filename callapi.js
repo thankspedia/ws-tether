@@ -73,7 +73,7 @@ function create_callapi( __nargs ) {
 
     get(target, prop, receiver) {
       if ( prop === 'OVERRIDE' ) {
-        return rreate_callapi_overrider({
+        return create_callapi_overrider({
           ...nargs,
           method_path : [ ...(nargs.method_path) ],
         });
