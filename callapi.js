@@ -57,7 +57,7 @@ function create_callapi( __nargs ) {
 
       if ( 'status' in result ) {
         if ( result.status === 'error' ) {
-          throw new Error( 'error', { cause : result } );
+          throw new Error( 'error', { cause : result.value } );
         } else if ( result.status === 'succeeded' ) {
           return result.value;
         } else {

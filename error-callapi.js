@@ -4,6 +4,10 @@ function create_error_callapi_handler( message ) {
     throw new TypeError( `an invalid value was specified as message argument; '${message}' ` );
   }
 
+  if ( message.trim() === '' ) {
+    throw new TypeError( `must specify a message` );
+  }
+
   return ( nargs )=>{
     const {
       method_args = [],
@@ -12,7 +16,7 @@ function create_error_callapi_handler( message ) {
 
     return {
       status : 'error',
-      value : message,
+      value : new Error( message ),
     }
   };
 }
