@@ -317,6 +317,20 @@ function __create_middleware( contextFactory ) {
           let result = null;
           let status_code = 100;
 
+          // The method to respond when the result object is a pure JavaScript
+          // object.
+          const respond_as_json = (res)=>{
+            res.status( status_code ).json( result ).end();
+          };
+
+          // The method to respond when the result object is a Buffer object.
+          const respond_as_send = (res)=>{
+            res.status( status_code ).send( result ).end();
+          };
+          // The default method is respond_as_json(); treat the result object
+          // as a JSON object.
+          let respond = respond_as_json;
+
           console.log( '0aCa8xD0oY0', respapi_result );
 
           if ( false ) {
@@ -325,11 +339,20 @@ function __create_middleware( contextFactory ) {
             // 6) Set the flag `is_successful`
             is_successful = true;
             status_code = 200;
-            result =
-               recursivelyUnprevent(
-                AsyncContextResult.createSuccessful(
-                  respapi_result.value ));
 
+            // Check if the result object is a Buffer.
+            if ( Buffer.isBuffer( respapi_result.value ) ) {
+              // If so, treat it as Buffer; this effectively enables users to
+              // send binary data to the client.
+              result = respapi_result.value;
+              respond = respond_as_send;
+            } else {
+              // Otherwise let it treat as the default does.
+              result =
+                 recursivelyUnprevent(
+                  AsyncContextResult.createSuccessful(
+                    respapi_result.value ));
+            }
           } else if ( respapi_result.status === 'error' ) {
             status_code = 200;
             result =
@@ -375,7 +398,11 @@ function __create_middleware( contextFactory ) {
           // 7) Send the generated response.
 
           // The Logging Series No.1
-          res.status( status_code ).json( result ).end();
+
+          // >>> MODIFIED (Mon, 31 Jul 2023 17:27:12 +0900)
+          // res.status( status_code ).json( result ).end();
+          respond( res );
+          // <<< MODIFIED (Mon, 31 Jul 2023 17:27:12 +0900)
           done = true;
 
           // The Logging Series No.2

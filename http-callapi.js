@@ -141,17 +141,34 @@ async function http_callapi_handler( nargs ) {
   } = create_fetch_options_and_query();
 
   const result         = await fetch( create_fetch_url( http_server_url , method_path , query_string ) , fetch_options );
-  const response_text  = await result.text();
-  // console.log( 'respoinse_text',  response_text );
-  const response_json  = parse_response( response_text );
 
-  console.log( 'The Result of API', response_json );
+  // Check if the received object is a JSON object or one of others.
+  const content_type = result.headers.get( 'Content-Type' );
+  console.log( 'The Result of API (Content-Type)', content_type );
 
-  if ( ( 'status' in response_json ) && ( response_json[ 'status' ] === 'succeeded' ) ) {
-    return response_json
+  if ( content_type.includes( 'json' ) ) {
+    // If the received object is a JSON object, parse and convert it to an pure
+    // JavaScript object before pass it to the user.
+    const response_text  = await result.text();
+    // console.log( 'respoinse_text',  response_text );
+    const response_json  = parse_response( response_text );
+
+    console.log( 'The Result of API', response_json );
+    if ( ( 'status' in response_json ) && ( response_json[ 'status' ] === 'succeeded' ) ) {
+      return response_json
+    } else {
+      response_json[ Symbol.for( 'is_from_backend' ) ] = true;
+      throw response_json;
+    }
   } else {
-    response_json[ Symbol.for( 'is_from_backend' ) ] = true;
-    throw response_json;
+    console.log( 'The Result of API', '(BINARY)' );
+
+    // Otherwise, pass it as it is.
+    const value = await result.blob();
+    return {
+      status : 'succeeded',
+      value : value,
+    };
   }
 }
 
