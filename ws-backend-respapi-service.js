@@ -3,9 +3,10 @@ const express    = require('express');
 const cors       = require( 'cors' );
 const {
   startService,
-  asyncReadBackendSettings,
+  validateSettings,
 } = require('./service.js');
 const { loadContextFactory  } = require( './context-factory-loader.js' );
+const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
 
 const {
   create_websocket_upgrader,
@@ -152,7 +153,7 @@ module.exports.start_service_for_ws_backend = start_service_for_ws_backend;
 if ( require.main === module ) {
 
   (async ()=>{
-    const settings = await asyncReadBackendSettings();
+    const settings = validateSettings( await asyncReadSettings() );
     const {
       ports               = [ 2000 ],
       cors_origins        = default_cors_origins,

@@ -3,6 +3,7 @@ const process    = require( 'process' );
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
 const { schema } = require( 'vanilla-schema-validator' );
 const { typesafe_function } = require( 'runtime-typesafety' );
+const { preventUndefined } = require( 'prevent-undefined' );
 
 require( './schema' ).init( schema );
 require( 'authentication-context/schema' ).init( schema );
@@ -96,12 +97,12 @@ function default_cors_origins( origin, callback ) {
   callback( null, /.*/ )
 }
 
-async function asyncReadBackendSettings() {
-  const settings = (await asyncReadSettings( schema.t_async_context_service_settings() )) ?? {};
-  if ( ( settings?.async_context_backend?.ports?.length ?? 0) < 1 ) {
+const validateSettings = (settings) =>{
+  const result = preventUndefined( settings ,  schema.t_async_context_service_settings() );
+  if ( ( result?.async_context_backend?.ports?.length ?? 0 ) < 1 ) {
     console.error( `WARNING field 'ports' is missing in the setting file '${filenameOfSettings()}' the default values are applied.` );
   }
-  return settings;
-}
-module.exports.asyncReadBackendSettings = asyncReadBackendSettings;
+  return result;
+};
+module.exports.validateSettings = validateSettings;
 

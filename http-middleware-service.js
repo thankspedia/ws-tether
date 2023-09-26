@@ -4,15 +4,19 @@ const cors       = require( 'cors' );
 const {
   startService,
   createServer,
-  asyncReadBackendSettings,
+  validateSettings,
 } = require('./service.js');
+
+const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
+
+const env = require( 'asynchronous-context/env' );
 
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
 if ( require.main === module ) {
   const createService =
     async ()=>{
-      const settings = await asyncReadBackendSettings();
+      const settings = validateSettings( await asyncReadSettings() );
       const {
         ports               = [ 2000 ],
         cors_origins        = default_cors_origins,
