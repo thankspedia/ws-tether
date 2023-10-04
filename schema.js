@@ -17,7 +17,11 @@ function init( schema ) {
                                 array_of( number() ),
                                 << e => 0<e.length >>
                               ),
-        cors_origins        : or( array_of( string() ), null()),
+        cors_origins        : or(
+                                array_of( string() ),
+                                equals( << "ALLOW_ALL" >> ),
+                                function(),
+                              ),
       )
     )
   `;

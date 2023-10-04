@@ -13,11 +13,6 @@ const env = require( 'asynchronous-context/env' );
 
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
-function default_cors_origins( origin, callback ) {
-  console.error( 'WARNING : NO CORS SETTING FILE WAS SPECIFIED. THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
-  callback( null, /.*/ )
-}
-
 if ( require.main === module ) {
   const createService =
     async ()=>{

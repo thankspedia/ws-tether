@@ -93,14 +93,18 @@ function createServer( createApp, ports ) {
 module.exports.createServer = createServer;
 
 function default_cors_origins( origin, callback ) {
-  console.error( 'WARNING : NO CORS SETTING FILE WAS SPECIFIED. THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
   callback( null, /.*/ )
 }
 
 const validateSettings = (settings) =>{
   const result = preventUndefined( settings ,  schema.t_async_context_service_settings() );
+
   if ( ( result?.async_context_backend?.ports?.length ?? 0 ) < 1 ) {
     console.error( `WARNING field 'ports' is missing in the setting file '${filenameOfSettings()}' the default values are applied.` );
+  }
+  if ( result.async_context_backend.cors_origins === 'ALLOW_ALL' ) {
+    console.error( 'WARNING : CORS SETTING WAS SPECIFIED "ALLOW_ALL". THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
+    result.async_context_backend.cors_origins = default_cors_origins;
   }
   return result;
 };
