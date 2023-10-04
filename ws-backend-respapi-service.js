@@ -150,6 +150,11 @@ const start_service_for_ws_backend = (nargs)=>{
 };
 module.exports.start_service_for_ws_backend = start_service_for_ws_backend;
 
+function default_cors_origins( origin, callback ) {
+  console.error( 'WARNING : NO CORS SETTING FILE WAS SPECIFIED. THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
+  callback( null, /.*/ )
+}
+
 if ( require.main === module ) {
 
   (async ()=>{
