@@ -1,4 +1,8 @@
 
+{
+  require( 'asynchronous-context/env' ).config();
+}
+
 const express    = require('express');
 const cors       = require( 'cors' );
 const {
@@ -6,14 +10,10 @@ const {
   createServer,
   validateSettings,
 } = require('./service.js');
-
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
-
-const env = require( 'asynchronous-context/env' );
-
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
-if ( require.main === module ) {
+const startHttpMiddlewareService = ()=>{
   const createService =
     async ()=>{
       const settings = validateSettings( await asyncReadSettings() );
@@ -49,4 +49,9 @@ if ( require.main === module ) {
     };
 
   startService( createService );
+};
+module.exports. startHttpMiddlewareService = startHttpMiddlewareService;
+
+if ( require.main === module ) {
+  startHttpMiddlewareService();
 }
