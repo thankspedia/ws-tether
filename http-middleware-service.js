@@ -24,6 +24,8 @@ const startHttpMiddlewareService = ()=>{
         purge_require_cache = false,
       } = settings?.async_context_backend ?? {};
 
+      console.log( `Starting a middleware service with context_factory=${context_factory}` );
+
       const contextFactory = loadContextFactory( context_factory, purge_require_cache );
 
       const createApp = ()=>{

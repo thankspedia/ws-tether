@@ -1,7 +1,9 @@
 
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require('asynchronous-context/env').config();
+// MODIFIED (Thu, 05 Oct 2023 19:35:35 +0900)
+// require('asynchronous-context/env').config();
+require('asynchronous-context/settings').filenameOfSettings( 'http-callapi-test.settings.json' );
 
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
@@ -23,3 +25,4 @@ describe( 'callapi_test', ()=>{
     assert.equal(await obj.hello.world('foo','bar') , 'hello.world(foo,bar)' );
   });
 });
+
