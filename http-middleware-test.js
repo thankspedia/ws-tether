@@ -1,9 +1,20 @@
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
+require('asynchronous-context/settings').filenameOfSettings('http-middleware-test-context-factory.settings.json' );
 require('asynchronous-context/env').config();
+
+Object.assign( require('util').inspect.defaultOptions, {
+  depth  : null,
+  colors : false,
+  showHidden : false,
+  maxStringLength : Infinity,
+  // compact: false,
+  // breakLength: 1000,
+});
 
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
+const { spawn } = require( 'node:child_process' );
 
 let testService = null;
 
@@ -16,14 +27,48 @@ const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
         .filter( ([k,v])=>allowed_fields.includes(k)))
 });
 
-describe( 'http-middleware-test', ()=>{
-  before(()=>{
-  });
-  after(()=>{
+const sleep = (t)=>(new Promise((resolve,reject)=>{
+  setTimeout(resolve,t);
+}));
+let service = null;
+
+describe( 'http-middleware-test', async ()=>{
+  await before( async ()=>{
+    console.warn('BEFORE');
+    try {
+      service = spawn( 'start-http-middleware-service', {
+        // detached:true,
+        shell:false,
+        env: Object.assign({},process.env,{})
+      });
+      service.stdout.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stdout >> ' ) );
+      });
+      service.stderr.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stderr >> ' ) );
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    await sleep( 1000 );
+    console.error( 'BEFORE', service != null );
+    await sleep( 1000 );
   });
 
-  it( 'as no.1' , async()=>{
 
+  await after(  async ()=>{
+    console.warn('AFTER');
+    try{
+      service.kill();
+      service.unref();
+      console.error( 'DISCONNECTED', service.pid );
+    } catch(e){
+      console.error(e);
+    }
+  });
+
+  await it( 'as no.1' , async()=>{
     assert.deepEqual(
       await (
         fetch( 'http://localhost:2003/api/hello-world', {
@@ -40,7 +85,7 @@ describe( 'http-middleware-test', ()=>{
 
   });
 
-  it( 'as no.2' , async()=>{
+  await it( 'as no.2' , async()=>{
 
     assert.deepEqual(
       filter(
@@ -62,7 +107,7 @@ describe( 'http-middleware-test', ()=>{
 
   });
 
-  it( 'as no.3' , async()=>{
+  await it( 'as no.3' , async()=>{
 
     assert.deepEqual(
       filter(
@@ -83,7 +128,7 @@ describe( 'http-middleware-test', ()=>{
 
   });
 
-  it( 'as no.4' , async()=>{
+  await it( 'as no.4' , async()=>{
 
     assert.deepEqual(
       filter(
