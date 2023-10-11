@@ -6,7 +6,7 @@
     "end": true
   },
   "async_context_backend" : {
-    "context_factory" :"./http-callapi-test-context-factory",
+    "context_factory" :"./test/http-callapi-test-context-factory.js",
     "purge_require_cache" : false,
     "static_paths":[],
     "ports": [ 2003 ],
