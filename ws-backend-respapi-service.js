@@ -155,29 +155,32 @@ function default_cors_origins( origin, callback ) {
   callback( null, /.*/ )
 }
 
+
+async function bootService() {
+  const settings = validateSettings( await asyncReadSettings() );
+  const {
+    ports               = [ 2000 ],
+    cors_origins        = default_cors_origins,
+    context_factory     = ((name)=>{throw new Error( `${name} is not defined` )})('context_factory'),
+    path                = ((name)=>{throw new Error( `${name} is not defined` )})('path'),
+    purge_require_cache = false,
+  } = settings?.async_context_websocket_backend ?? {};
+
+  const event_handlers = {};
+
+  const create_context = loadContextFactory( context_factory, purge_require_cache );
+
+  start_service_for_ws_backend({
+    create_context,
+    event_handlers,
+    path  ,
+    ports ,
+  });
+}
+module.exports.bootService = bootService;
+
 if ( require.main === module ) {
-
-  (async ()=>{
-    const settings = validateSettings( await asyncReadSettings() );
-    const {
-      ports               = [ 2000 ],
-      cors_origins        = default_cors_origins,
-      context_factory     = ((name)=>{throw new Error( `${name} is not defined` )})('context_factory'),
-      path                = ((name)=>{throw new Error( `${name} is not defined` )})('path'),
-      purge_require_cache = false,
-    } = settings?.async_context_websocket_backend ?? {};
-
-    const event_handlers = {};
-
-    const create_context = loadContextFactory( context_factory, purge_require_cache );
-
-    start_service_for_ws_backend({
-      create_context,
-      event_handlers,
-      path  ,
-      ports ,
-    });
-  })();
+  bootService();
 }
 
 

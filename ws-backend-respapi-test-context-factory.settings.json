@@ -1,4 +1,6 @@
 {
+  "env": {
+  },
   "crypto_web_token" : {
     "tokenizer_password" : "helloworldfoobarbazs",
     "end": true

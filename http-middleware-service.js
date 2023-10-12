@@ -52,7 +52,8 @@ const startHttpMiddlewareService = ()=>{
 
   startService( createService );
 };
-module.exports. startHttpMiddlewareService = startHttpMiddlewareService;
+module.exports.startHttpMiddlewareService = startHttpMiddlewareService;
+module.exports.bootService                = startHttpMiddlewareService;
 
 if ( require.main === module ) {
   startHttpMiddlewareService();

@@ -1,12 +1,29 @@
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
+require('asynchronous-context/settings').filenameOfSettings( 'ws-backend-respapi-test-context-factory.settings.json' );
 require('asynchronous-context/env').config();
+
+Object.assign( require('util').inspect.defaultOptions, {
+  depth  : null,
+  colors : false,
+  showHidden : false,
+  maxStringLength : Infinity,
+  // compact: false,
+  // breakLength: 1000,
+});
 
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
+const { spawn } = require( 'node:child_process' );
 const { WebSocket } = require( 'ws' );
 
 let testService = null;
+
+const sleep = (t)=>(new Promise((resolve,reject)=>{
+  setTimeout(resolve,t);
+}));
+
+let service = null;
 
 const host_object = {
   foo: {
@@ -26,17 +43,79 @@ const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
         .filter( ([k,v])=>allowed_fields.includes(k)))
 });
 
-describe( 'http-middleware-test', ()=>{
-  before(()=>{
-  });
-  after(()=>{
+function createSimpleSemaphore(){
+  let __msg = null;
+  let __fn = null;
+
+  return function simple_semaphore(msg,fn) {
+    if ( msg !== undefined ) {
+      __msg = msg;
+    }
+
+    if ( typeof fn === 'function' ) {
+      if ( __fn ) {
+        console.log('***1');
+        fn(__msg);
+      } else {
+        console.log('***2');
+        __fn = fn;
+      }
+    } else {
+      if ( __fn ) {
+        console.log('***3');
+        __fn(__msg);
+      } else {
+        console.log('***4');
+        __fn = true;
+      }
+    }
+  };
+}
+
+describe( 'http-middleware-test', async ()=>{
+  await before( async ()=>{
+    console.warn('BEFORE');
+    try {
+      service = spawn( 'start-ws-service', {
+        // detached:true,
+        shell:false,
+        env: Object.assign({},process.env,{})
+      });
+      service.stdout.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stdout >> ' ) );
+      });
+      service.stderr.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stderr >> ' ) );
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    await sleep( 1000 );
+    console.error( 'BEFORE', service != null );
+    await sleep( 1000 );
   });
 
-  it( 'as no.1' , async()=>{
+  await after(  async ()=>{
+    console.warn('AFTER');
+    try{
+      service.kill();
+      service.unref();
+      console.error( 'DISCONNECTED', service.pid );
+    } catch(e){
+      console.error(e);
+    }
+  });
+
+  await it( 'as no.1' , async()=>{
+    let resolve = createSimpleSemaphore();
+    let reject  = createSimpleSemaphore();
+
     const ws = new WebSocket( 'ws://localhost:3952/foo' );
 
     ws.on('error', (...args)=>{
       console.error('error!', ...args );
+      reject('foo');
     });
 
     ws.on('open', function open() {
@@ -48,10 +127,10 @@ describe( 'http-middleware-test', ()=>{
             method_args : [ 1, 2, 3 ],
           },
         }));
-      },1000);
+      },5000);
     });
 
-    ws.on('message', function message(__data) {
+    ws.on( 'message', function message(__data) {
       const data = JSON.parse( __data.toString() );
       console.log( 'received a message', data );
 
@@ -59,8 +138,16 @@ describe( 'http-middleware-test', ()=>{
         console.log( data );
         console.log( 'okay,sir' );
         ws.close();
+        resolve( 'okay,sir' );
       }
     });
+
+    console.log(
+      await new Promise((__resolve,__reject)=>{
+        resolve( undefined,  __resolve );
+        reject(  undefined,  __reject  );
+      })
+    );
   });
 });
 
