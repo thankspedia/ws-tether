@@ -47,29 +47,26 @@ function createSimpleSemaphore(){
   let __msg = null;
   let __fn = null;
 
-  return function simple_semaphore(msg,fn) {
+  const result =  function simple_semaphore( msg ) {
     if ( msg !== undefined ) {
       __msg = msg;
     }
-
-    if ( typeof fn === 'function' ) {
-      if ( __fn ) {
-        console.log('***1');
-        fn(__msg);
-      } else {
-        console.log('***2');
-        __fn = fn;
-      }
+    if ( __fn ) {
+      __fn(__msg);
     } else {
-      if ( __fn ) {
-        console.log('***3');
-        __fn(__msg);
-      } else {
-        console.log('***4');
-        __fn = true;
-      }
+      __fn = true;
     }
   };
+
+  result.set = function(fn) {
+    if ( __fn ) {
+      fn(__msg);
+    } else {
+      __fn = fn;
+    }
+  };
+
+  return result;
 }
 
 describe( 'http-middleware-test', async ()=>{
@@ -144,8 +141,8 @@ describe( 'http-middleware-test', async ()=>{
 
     console.log(
       await new Promise((__resolve,__reject)=>{
-        resolve( undefined,  __resolve );
-        reject(  undefined,  __reject  );
+        resolve.set( __resolve );
+        reject .set( __reject  );
       })
     );
   });

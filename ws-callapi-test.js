@@ -1,15 +1,34 @@
 
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require('asynchronous-context/env').config();
+require( 'asynchronous-context/settings' ).filenameOfSettings( 'ws-callapi-test-context-factory.settings.json' );
+require( 'asynchronous-context/env' ).config();
+
+Object.assign( require('util').inspect.defaultOptions, {
+  depth  : null,
+  colors : false,
+  showHidden : false,
+  maxStringLength : Infinity,
+  // compact: false,
+  // breakLength: 1000,
+});
+
 
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after } = require( 'node:test' );
+const { spawn } = require( 'node:child_process' );
 const { createContext: __createContext } = require( './ws-frontend-callapi-context-factory' );
 
 async function createContext() {
   return await __createContext({ websocket: 'ws://localhost:3952/foo'});
 }
+
+const sleep = (t)=>(new Promise((resolve,reject)=>{
+  setTimeout(resolve,t);
+}));
+
+let service = null;
+
 
 describe( ()=>{
   it('as test1', async()=>{
