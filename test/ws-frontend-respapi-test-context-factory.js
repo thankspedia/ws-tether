@@ -1,6 +1,6 @@
 const { AsyncContext }            = require( 'asynchronous-context' );
 const { set_typesafe_tags }       = require( 'runtime-typesafety' );
-const { middleware, METHOD_POST } = require( './http-middleware' );
+const { middleware, METHOD_POST } = require( 'asynchronous-context-backend/http-middleware' );
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );

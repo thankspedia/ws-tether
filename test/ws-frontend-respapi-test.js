@@ -1,17 +1,19 @@
 
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
+require( 'asynchronous-context/settings' ).filenameOfSettings( './ws-frontend-respapi-test.settings.json' );
 require('asynchronous-context/env').config();
 
 
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
+const { spawn } = require( 'node:child_process' );
 const { AsyncContext } = require( 'asynchronous-context' );
 const { METHOD_POST  } = require( 'asynchronous-context-backend' );
 
-const { create_callapi } = require( './callapi.js' );
-const { websocket_callapi_handler } = require( './ws-callapi' );
-const { create_websocket, await_websocket, await_sleep } = require( './ws-utils.js' );
+const { create_callapi } = require( 'asynchronous-context-backend/callapi.js' );
+const { websocket_callapi_handler } = require( 'asynchronous-context-backend/ws-callapi' );
+const { create_websocket, await_websocket, await_sleep } = require( 'asynchronous-context-backend/ws-utils.js' );
 const { set_typesafe_tags } = require( 'runtime-typesafety' );
 
 const {
@@ -19,7 +21,23 @@ const {
  t_respapi_message,
  handle_on_message_of_ws_frontend,
  on_init_websocket_of_ws_frontend_respapi,
-} = require( './ws-frontend-respapi.js' );
+} = require( 'asynchronous-context-backend/ws-frontend-respapi.js' );
+
+
+Object.assign( require('util').inspect.defaultOptions, {
+  depth  : null,
+  colors : false,
+  showHidden : false,
+  maxStringLength : Infinity,
+  // compact: false,
+  // breakLength: 1000,
+});
+
+const sleep = (t)=>(new Promise((resolve,reject)=>{
+  setTimeout(resolve,t);
+}));
+
+let service = null;
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
@@ -27,13 +45,41 @@ function p(o) {
 
 describe( async ()=>{
 
-  before(async()=>{
+  await before( async ()=>{
+    console.warn('BEFORE');
+    try {
+      service = spawn( 'start-ws-service', {
+        // detached:true,
+        shell:false,
+        env: Object.assign({},process.env,{})
+      });
+      service.stdout.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stdout >> ' ) );
+      });
+      service.stderr.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stderr >> ' ) );
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    await sleep( 1000 );
+    console.error( 'BEFORE', service != null );
+    await sleep( 1000 );
   });
 
-  after(async ()=>{
+  await after(  async ()=>{
+    console.warn('AFTER');
+    try{
+      service.kill();
+      service.unref();
+      console.error( 'DISCONNECTED', service.pid );
+    } catch(e){
+      console.error(e);
+    }
   });
 
-  it('as test1', async()=>{
+  await it('as test1', async()=>{
     let flag_succeded = false;
 
     class Hello extends AsyncContext {
