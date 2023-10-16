@@ -34,7 +34,7 @@ function startService( __createService ) {
   let serverList = [];
 
   const asyncRestartServices = async ()=>{
-    console.log( '[asynchronous-context-backend] a watchdog detected updating file... restarting the server.' );
+    console.log( '[asynchronous-context-rpc] a watchdog detected updating file... restarting the server.' );
     serverList.forEach( e=>e.stop() );
     serverList.length = 0;
     serverList.push( ...(await createService()) );
@@ -42,7 +42,7 @@ function startService( __createService ) {
   };
 
   const asyncShutdownServices = async ()=>{
-    console.log( '[asynchronous-context-backend] stop the service.' );
+    console.log( '[asynchronous-context-rpc] stop the service.' );
     serverList.forEach( e=>e.stop() );
     serverList.length = 0;
   };
@@ -78,7 +78,7 @@ function createServer( createApp, ports ) {
           server_list.push(
             app.listen( i,
               () => {
-                console.log( `[asynchronous-context-backend] an instance of asynchronous-context-web is listening at http://localhost:${i}` );
+                console.log( `[asynchronous-context-rpc] an instance of asynchronous-context-web is listening at http://localhost:${i}` );
               }
             )
           );

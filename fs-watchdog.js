@@ -10,12 +10,12 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
 
   // throttling the file change events.
   {
-    console.log(`[asynchronous-context-backend] watching for file changes on ${path.resolve( watchingFile)}`);
+    console.log(`[asynchronous-context-rpc] watching for file changes on ${path.resolve( watchingFile)}`);
 
     fs.watch( watchingFile, (event, filename)=>{
       // console.log({ event, filename } );
       if (filename && event ==='change') {
-        // console.log(`[asynchronous-context-backend] ${filename} file Changed`);
+        // console.log(`[asynchronous-context-rpc] ${filename} file Changed`);
         __filename = filename;
         modifiedTime = new Date();
         processed = true;

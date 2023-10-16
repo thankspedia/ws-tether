@@ -22,12 +22,12 @@ const { spawn } = require( 'node:child_process' );
 const is_remote = true;
 function createContext() {
   if ( is_remote ) {
-    return require( 'asynchronous-context-backend/http-callapi-context-factory' ).createContext({
+    return require( 'asynchronous-context-rpc/http-callapi-context-factory' ).createContext({
       http_server_url           : 'http://localhost:2004/api/',
       http_authentication_token : 'hello_authentication_token',
     });
   } else {
-    return require( 'asynchronous-context-backend/http-middleware-test-context-factory' ).createContext();
+    return require( 'asynchronous-context-rpc/http-middleware-test-context-factory' ).createContext();
   }
 }
 

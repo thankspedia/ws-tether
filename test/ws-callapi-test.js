@@ -17,7 +17,7 @@ Object.assign( require('util').inspect.defaultOptions, {
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after } = require( 'node:test' );
 const { spawn } = require( 'node:child_process' );
-const { createContext: __createContext } = require( 'asynchronous-context-backend/ws-frontend-callapi-context-factory' );
+const { createContext: __createContext } = require( 'asynchronous-context-rpc/ws-frontend-callapi-context-factory' );
 
 async function createContext() {
   return await __createContext({ websocket: 'ws://localhost:3954/foo'});

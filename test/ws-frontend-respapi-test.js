@@ -9,11 +9,11 @@ const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
 const { spawn } = require( 'node:child_process' );
 const { AsyncContext } = require( 'asynchronous-context' );
-const { METHOD_POST  } = require( 'asynchronous-context-backend' );
+const { METHOD_POST  } = require( 'asynchronous-context-rpc' );
 
-const { create_callapi } = require( 'asynchronous-context-backend/callapi.js' );
-const { websocket_callapi_handler } = require( 'asynchronous-context-backend/ws-callapi' );
-const { create_websocket, await_websocket, await_sleep } = require( 'asynchronous-context-backend/ws-utils.js' );
+const { create_callapi } = require( 'asynchronous-context-rpc/callapi.js' );
+const { websocket_callapi_handler } = require( 'asynchronous-context-rpc/ws-callapi' );
+const { create_websocket, await_websocket, await_sleep } = require( 'asynchronous-context-rpc/ws-utils.js' );
 const { set_typesafe_tags } = require( 'runtime-typesafety' );
 
 const {
@@ -21,7 +21,7 @@ const {
  t_respapi_message,
  handle_on_message_of_ws_frontend,
  on_init_websocket_of_ws_frontend_respapi,
-} = require( 'asynchronous-context-backend/ws-frontend-respapi.js' );
+} = require( 'asynchronous-context-rpc/ws-frontend-respapi.js' );
 
 
 Object.assign( require('util').inspect.defaultOptions, {

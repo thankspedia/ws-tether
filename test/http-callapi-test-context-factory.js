@@ -1,6 +1,6 @@
 const { AsyncContext }      = require( 'asynchronous-context' );
 const { set_typesafe_tags } = require( 'runtime-typesafety' );
-const { middleware, METHOD_POST } = require( 'asynchronous-context-backend/http-middleware' );
+const { middleware, METHOD_POST } = require( 'asynchronous-context-rpc/http-middleware' );
 
 /*
  * duplicated on

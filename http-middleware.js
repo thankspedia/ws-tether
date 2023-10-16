@@ -2,7 +2,7 @@ const express                = require( 'express' );
 const bodyParser             = require( 'body-parser' );
 const url                    = require( 'url' );
 const { AsyncContextResult } = require( 'asynchronous-context/result' );
-const { respapi }            = require( 'asynchronous-context-backend/respapi' );
+const { respapi }            = require( 'asynchronous-context-rpc/respapi' );
 
 const {
   preventUndefined,
