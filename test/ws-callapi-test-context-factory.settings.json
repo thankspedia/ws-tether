@@ -20,9 +20,9 @@
     "purge_require_cache" : false,
     "static_paths":[],
     "path":  "/foo",
-    "ports": [ 3952 ],
+    "ports": [ 3954 ],
     "cors_origins" : [
-      "http://localhost:3952"
+      "http://localhost:3954"
     ],
     "end": true
   },

@@ -66,6 +66,7 @@ describe( 'http-middleware-test', async ()=>{
     } catch(e){
       console.error(e);
     }
+    await sleep( 1000 );
   });
 
   await it( 'as no.1' , async()=>{

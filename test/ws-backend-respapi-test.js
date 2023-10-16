@@ -102,13 +102,14 @@ describe( 'http-middleware-test', async ()=>{
     } catch(e){
       console.error(e);
     }
+    await sleep( 1000 );
   });
 
   await it( 'as no.1' , async()=>{
     let resolve = createSimpleSemaphore();
     let reject  = createSimpleSemaphore();
 
-    const ws = new WebSocket( 'ws://localhost:3952/foo' );
+    const ws = new WebSocket( 'ws://localhost:3953/foo' );
 
     ws.on('error', (...args)=>{
       console.error('error!', ...args );

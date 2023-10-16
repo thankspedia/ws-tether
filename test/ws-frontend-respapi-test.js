@@ -77,6 +77,7 @@ describe( async ()=>{
     } catch(e){
       console.error(e);
     }
+    await sleep( 1000 );
   });
 
   await it('as test1', async()=>{
