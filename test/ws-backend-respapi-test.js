@@ -43,7 +43,7 @@ const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
         .filter( ([k,v])=>allowed_fields.includes(k)))
 });
 
-function createSimpleSemaphore(){
+function createSimpleSemaphore() {
   let __msg = null;
   let __fn = null;
 

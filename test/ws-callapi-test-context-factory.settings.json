@@ -1,10 +1,12 @@
 {
+  "env" : {
+  },
   "crypto_web_token" : {
     "tokenizer_password" : "helloworldfoobarbazs",
     "end": true
   },
   "async_context_backend" : {
-    "context_factory" :"./http-middleware-test-context-factory",
+    "context_factory" :"asynchronous-context-backend/test/http-middleware-test-context-factory",
     "purge_require_cache" : false,
     "static_paths":[],
     "ports": [ 2003 ],
@@ -14,7 +16,7 @@
     "end": true
   },
   "async_context_websocket_backend" : {
-    "context_factory" :"./ws-callapi-test-context-factory.js",
+    "context_factory" :"asynchronous-context-backend/test/ws-callapi-test-context-factory.js",
     "purge_require_cache" : false,
     "static_paths":[],
     "path":  "/foo",

@@ -1,7 +1,7 @@
 
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require( 'asynchronous-context/settings' ).filenameOfSettings( 'ws-callapi-test-context-factory.settings.json' );
+require( 'asynchronous-context/settings' ).filenameOfSettings( './ws-callapi-test-context-factory.settings.json' );
 require( 'asynchronous-context/env' ).config();
 
 Object.assign( require('util').inspect.defaultOptions, {
@@ -17,7 +17,7 @@ Object.assign( require('util').inspect.defaultOptions, {
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after } = require( 'node:test' );
 const { spawn } = require( 'node:child_process' );
-const { createContext: __createContext } = require( './ws-frontend-callapi-context-factory' );
+const { createContext: __createContext } = require( 'asynchronous-context-backend/ws-frontend-callapi-context-factory' );
 
 async function createContext() {
   return await __createContext({ websocket: 'ws://localhost:3952/foo'});
@@ -30,8 +30,42 @@ const sleep = (t)=>(new Promise((resolve,reject)=>{
 let service = null;
 
 
-describe( ()=>{
-  it('as test1', async()=>{
+describe( async ()=>{
+  await before( async ()=>{
+    console.warn('BEFORE');
+    try {
+      service = spawn( 'start-ws-service', {
+        // detached:true,
+        shell:false,
+        env: Object.assign({},process.env,{})
+      });
+      service.stdout.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stdout >> ' ) );
+      });
+      service.stderr.on('data', (data)=>{
+        console.log( data.toString().trim().replaceAll( /^/gm, 'stderr >> ' ) );
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    await sleep( 1000 );
+    console.error( 'BEFORE', service != null );
+    await sleep( 1000 );
+  });
+
+  await after(  async ()=>{
+    console.warn('AFTER');
+    try{
+      service.kill();
+      service.unref();
+      console.error( 'DISCONNECTED', service.pid );
+    } catch(e){
+      console.error(e);
+    }
+  });
+
+  await it('as test1', async()=>{
     const p = new Promise( async (resolve,reject)=>{
       const {context} = await createContext();
       const websocket = (await context.websocket() );
@@ -59,7 +93,7 @@ describe( ()=>{
     return await p;
   });
 
-  it('as test2', async()=>{
+  await it('as test2', async()=>{
     const p = new Promise( async (resolve,reject)=>{
       const { context } = await createContext();
       const websocket = (await context.websocket() );
@@ -115,3 +149,4 @@ describe( ()=>{
   //   });
   // });
 });
+
