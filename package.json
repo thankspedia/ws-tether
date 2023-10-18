@@ -1,7 +1,7 @@
 {
   "name": "asynchronous-context-rpc",
   "version": "1.0.0",
-  "description": "Implement Remote Procedure Call (beta)",
+  "description": "Implement Remote Procedure Call in Node.js (beta)",
   "main": "service.js",
   "bin": {
     "start-http-middleware-service" : "bin/start-http-middleware-service.js",
@@ -34,7 +34,7 @@
 
     "end":""
   },
-  "author": "",
+  "author": "Atsushi Oka (Kombucha.js)",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
