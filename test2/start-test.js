@@ -23,7 +23,7 @@ const is_remote = true;
 function createContext() {
   if ( is_remote ) {
     return require( 'asynchronous-context-rpc/http-callapi-context-factory' ).createContext({
-      http_server_url           : 'http://localhost:2004/api/',
+      http_server_url           : 'http://localhost:2012/api/',
       http_authentication_token : 'hello_authentication_token',
     });
   } else {
@@ -59,7 +59,7 @@ describe( 'it as', async ()=>{
   await before( async ()=>{
     console.warn('BEFORE');
     try {
-      service = spawn( 'start-http-middleware-service', {
+      service = spawn( 'start-service', {
         // detached:true,
         shell:false,
         env: Object.assign({},process.env,{})
