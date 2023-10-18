@@ -7,18 +7,28 @@ const express    = require('express');
 const cors       = require( 'cors' );
 const {
   startService,
-  createServer,
   validateSettings,
 } = require('./service.js');
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
 /*
- *
+ * loadService : function(
+ *   input: array(
+ *     serviceSettings : object(
+ *     ),
+ *   )
+ *   output : array_of(
+ *     object(
+ *       start : function(),
+ *       stop  : function(),
+ *     ),
+ *   ),
+ * )
  *
  */
 const loadService = ( serviceSettings )=>{
-  const {
+  let {
     ports               = [ 2000 ],
     cors_origins        = default_cors_origins,
     context_factory     = (()=>{throw new Error('context_factory is not defined')})(),
@@ -71,6 +81,7 @@ const loadService = ( serviceSettings )=>{
     }
   ];
 };
+module.exports.loadService = loadService;
 
 
 const startHttpMiddlewareService = ()=>{

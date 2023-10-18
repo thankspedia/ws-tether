@@ -1,9 +1,10 @@
 
 const process    = require( 'process' );
-const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
+const { filenameOfSettings } = require( 'asynchronous-context/settings' );
 const { schema } = require( 'vanilla-schema-validator' );
 const { typesafe_function } = require( 'runtime-typesafety' );
 const { preventUndefined } = require( 'prevent-undefined' );
+const {  readSettings } = require( 'asynchronous-context/settings' );
 
 require( './schema' ).init( schema );
 require( 'authentication-context/schema' ).init( schema );
@@ -44,7 +45,7 @@ function startService( __createService ) {
   const createService = typesafe_function( __createService, {
     typesafe_input : schema.compile`array()`,
     typesafe_output : schema.compile`array_of(
-      object(
+      serviceList : object(
         start : function(),
         stop : function(),
       ),
@@ -98,68 +99,15 @@ function startService( __createService ) {
 }
 module.exports.startService = startService;
 
-/*
- *   createServer()
- * =========================================================================
- *
- * `createServer()` function is a utility to start listening sockets of an
- * express application. The instance of the Express application should be
- * available by a factory which is given as `createApp()` function.
- *
- * createServer : function(
- *   input : array(
- *     createApp : function(
- *       input  : array(),
- *       output : array(
- *         object(
- *           listen : function(
- *             input : array(
- *               port_no : number(),
- *             ),
- *             output : function(
- *               input : array(),
- *               output : object(
- *                 close : function(
- *                   input : array(),
- *                   output : undefined,
- *                 ),
- *               ),
- *             ),
- *           ),
- *         ),
- *       ),
- *     ),
- *     ports : arrayof( number() ),
- *   ),
- *   output : object(
- *     start : function(),
- *     stop  : function(),
- *   ),
- * )
- */
-function createServer( createApp, ports ) {
-  const server_list =[];
-  return {
-    start: async ()=>{
-      if ( server_list.length === 0 ) {
-        for ( let i of ports ) {
-          const app = await createApp();
-          server_list.push(
-            app.listen( i,
-              () => {
-                console.log( `[asynchronous-context-rpc] an instance of asynchronous-context-web is listening at http://localhost:${i}` );
-              }
-            )
-          );
-        }
-      }
-    },
-    stop : ()=>{
-      server_list.forEach( e=>e.close() );
-    },
+const createLoadServiceAfterReadSettings = (loadService)=>{
+  function loadServiceAfterReadSettings() {
+    return loadService( readSettings() );
   };
-}
-module.exports.createServer = createServer;
+  return loadServiceAfterReadSettings;
+};
+module.exports.createLoadServiceAfterReadSettings = createLoadServiceAfterReadSettings;
+
+
 
 function default_cors_origins( origin, callback ) {
   callback( null, /.*/ )
