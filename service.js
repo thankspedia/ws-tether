@@ -10,6 +10,36 @@ require( 'authentication-context/schema' ).init( schema );
 
 const { startFileSytemWatchdog } = require( './fs-watchdog.js' );
 
+/*
+ *   startService()
+ * =========================================================================
+ *
+ * `startService()` function is a utility to start ``servers'' as a service.
+ * In this context, a service is an object which can be shut down or restarted.
+ *
+ * The purpose of this utility is to restart the given servers whenever any
+ * file updates were occurred in the file system. If you do not need restarting
+ * the servers in order to follow any file updates, it is sufficient to call
+ * the `createService()` function to start the service.
+ *
+ * startService : function(
+ *   input : array(
+ *     createService : function(
+ *       input : array(),
+ *       output: array_of(
+ *         object(
+ *           start : function(),
+ *           stop : function(),
+ *         ),
+ *       ),
+ *     ),
+ *   ),
+ *   output : object(
+ *     shutdown: function(),
+ *     restart : function(),
+ *   ),
+ * )
+ */
 function startService( __createService ) {
   const createService = typesafe_function( __createService, {
     typesafe_input : schema.compile`array()`,
@@ -68,6 +98,45 @@ function startService( __createService ) {
 }
 module.exports.startService = startService;
 
+/*
+ *   createServer()
+ * =========================================================================
+ *
+ * `createServer()` function is a utility to start listening sockets of an
+ * express application. The instance of the Express application should be
+ * available by a factory which is given as `createApp()` function.
+ *
+ * createServer : function(
+ *   input : array(
+ *     createApp : function(
+ *       input  : array(),
+ *       output : array(
+ *         object(
+ *           listen : function(
+ *             input : array(
+ *               port_no : number(),
+ *             ),
+ *             output : function(
+ *               input : array(),
+ *               output : object(
+ *                 close : function(
+ *                   input : array(),
+ *                   output : undefined,
+ *                 ),
+ *               ),
+ *             ),
+ *           ),
+ *         ),
+ *       ),
+ *     ),
+ *     ports : arrayof( number() ),
+ *   ),
+ *   output : object(
+ *     start : function(),
+ *     stop  : function(),
+ *   ),
+ * )
+ */
 function createServer( createApp, ports ) {
   const server_list =[];
   return {
@@ -109,4 +178,6 @@ const validateSettings = (settings) =>{
   return result;
 };
 module.exports.validateSettings = validateSettings;
+
+
 
