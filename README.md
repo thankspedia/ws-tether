@@ -3,7 +3,7 @@
 ================================================================================
 
 This is an Web API framework which is resembling to traditional Remote Procedure
-Call.  This module is developped as a subproject of [Kombucha.js][kombucha]
+Call.  This module is developed as a subproject of [Kombucha.js][kombucha]
 framework. For further information, see the documentation of [Kombucha.js][kombucha].
 
 
@@ -36,6 +36,7 @@ Coming soon.
  History
 ---------------
 - (Mon, 16 Oct 2023 19:52:10 +0900) Create `README.md`.
+- (Wed, 18 Oct 2023 20:42:04 +0900) Removed unnecessary files from the package.
 
 
 
@@ -55,6 +56,7 @@ This feature was added on (Thu, 18 May 2023 18:10:37 +0900)
 
 ### `REQUEST` to `OVERRIDE` ###
 `OVERRIDE` was formerly `REQUEST`; it is modified on (Thu, 01 Jun 2023 14:59:25 +0900).
+
 
 
 

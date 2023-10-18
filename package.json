@@ -1,6 +1,6 @@
 {
   "name": "asynchronous-context-rpc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Implement Remote Procedure Call in Node.js (beta)",
   "main": "service.js",
   "bin": {
