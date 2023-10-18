@@ -45,7 +45,7 @@ function startService( __createService ) {
   const createService = typesafe_function( __createService, {
     typesafe_input : schema.compile`array()`,
     typesafe_output : schema.compile`array_of(
-      serviceList : object(
+      object(
         start : function(),
         stop : function(),
       ),

@@ -28,75 +28,73 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
     return server;
   }
 
+  const services = [];
+  const sockets = new Set();
   return (
-    async ()=>{
-      const services = [];
-      const sockets = new Set();
-      return ports.map(
-        port=>(
-          {
-            start() {
-              services.push(
-                ...(
-                  create_app().map(
-                    e=>{
-                      const server = e.listen(
-                        port,
-                        (e)=>{
-                          console.log( 'ws-server opened', 'C3FXWHjYwU0' );
-                        }
-                      );
+    ports.map(
+      port=>(
+        {
+          start() {
+            services.push(
+              ...(
+                create_app().map(
+                  e=>{
+                    const server = e.listen(
+                      port,
+                      (e)=>{
+                        console.log( 'ws-server opened', 'C3FXWHjYwU0' );
+                      }
+                    );
 
-                      server.on( 'error', (e)=>{
-                        console.error( 'server-error', e );
+                    server.on( 'error', (e)=>{
+                      console.error( 'server-error', e );
+                    })
+
+                    server.on( 'connection', (socket)=>{
+                      console.log( 'sZYTMC4A0I', 'connection');
+
+                      sockets.add( socket );
+
+                      socket.on( 'close', ()=>{
+                        console.log( 'sZYTMC4A0I', 'socket.close()' );
                       })
 
-                      server.on( 'connection', (socket)=>{
-                        console.log( 'sZYTMC4A0I', 'connection');
-
-                        sockets.add( socket );
-
-                        socket.on( 'close', ()=>{
-                          console.log( 'sZYTMC4A0I', 'socket.close()' );
-                        })
-
-                        socket.on( 'data', ()=>{
-                          console.log( 'sZYTMC4A0I', 'socket.data()' );
-                        })
-                      });
-                      server.on( 'upgrade', handle_upgrade );
-                      return wrap(server);
-                    }
-                  )
-                )
-              );
-              console.log('nTPf8R8RExE', {services} );
-            },
-
-            stop() {
-              services.forEach( e=>e.close(
-                (e)=>{
-                  if ( e ) {
-                    console.error( 'ws-server closed(with error)', e, 'C3FXWHjYwU0' );
-                  } else {
-                    console.log( 'ws-server closed', 'C3FXWHjYwU0' );
+                      socket.on( 'data', ()=>{
+                        console.log( 'sZYTMC4A0I', 'socket.data()' );
+                      })
+                    });
+                    server.on( 'upgrade', handle_upgrade );
+                    return wrap(server);
                   }
-                }
-              ));
-              services.length = 0;
-              console.log('nTPf8R8RExE', {services} );
+                )
+              )
+            );
+            console.log('nTPf8R8RExE', {services} );
+          },
 
-              console.log( 'ws-server closed 2', 'C3FXWHjYwU0' );
-              for ( const i of sockets.values() ) {
-                i.destroy();
+          stop() {
+            services.forEach( e=>e.close(
+              (e)=>{
+                if ( e ) {
+                  console.error( 'ws-server closed(with error)', e, 'C3FXWHjYwU0' );
+                } else {
+                  console.log( 'ws-server closed', 'C3FXWHjYwU0' );
+                }
               }
-            },
-          }
-        )
-      );
-    }
+            ));
+            services.length = 0;
+            console.log('nTPf8R8RExE', {services} );
+
+            console.log( 'ws-server closed 2', 'C3FXWHjYwU0' );
+            for ( const i of sockets.values() ) {
+              i.destroy();
+            }
+          },
+        }
+      )
+    )
   );
-};
+}
 module.exports.create_service_factory = create_service_factory;
 
 schema.define`
@@ -129,7 +127,7 @@ const start_service_for_ws_backend = (nargs)=>{
     return [app];
   };
 
-  return startService(
+  return (
     create_service_factory(
       create_app,
       ports,
@@ -155,33 +153,49 @@ function default_cors_origins( origin, callback ) {
 }
 
 
-async function startWsService() {
-  const settings = await asyncReadSettings();
+function loadService( serviceSettings ) {
   const {
-    ports               = [ 2000 ],
-    cors_origins        = default_cors_origins,
+    ports               = [],
+    // cors_origins        = default_cors_origins,
     context_factory     = ((name)=>{throw new Error( `${name} is not defined` )})('context_factory'),
     path                = ((name)=>{throw new Error( `${name} is not defined` )})('path'),
     purge_require_cache = false,
-  } = settings?.async_context_websocket_backend ?? {};
+  } = serviceSettings;
+
+  if ( ( ports.length ?? 0 ) < 1 ) {
+    console.error( `WARNING field 'ports' is missing in the setting file '${filenameOfSettings()}' the default values are applied.` );
+    ports = [ 2000 ];
+  }
 
   const event_handlers = {};
 
   const create_context = loadContextFactory( context_factory, purge_require_cache );
 
-  start_service_for_ws_backend({
-    create_context,
-    event_handlers,
-    path  ,
-    ports ,
-  });
+  return (
+    start_service_for_ws_backend({
+      create_context,
+      event_handlers,
+      path  ,
+      ports ,
+    })
+  );
 }
+module.exports.loadService = loadService;
+
+async function startWsService() {
+  const createService =
+    async()=>{
+      const settings = await asyncReadSettings();
+      const serviceSettings = settings?.async_context_websocket_backend ?? {};
+      return loadService( serviceSettings );
+    };
+
+  startService( createService );
+};
 module.exports.startService = startWsService;
 
 if ( require.main === module ) {
   startWsService();
 }
-
-
 
 
