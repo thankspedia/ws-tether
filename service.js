@@ -38,10 +38,10 @@ const loadService = ( settings )=>{
   return serviceList;
 };
 
-function bootService() {
+function startAllService() {
   startService(
     createLoadServiceAfterReadSettings(
       loadService ));
 }
-module.exports.bootService = bootService;
+module.exports.startService = startAllService;
 

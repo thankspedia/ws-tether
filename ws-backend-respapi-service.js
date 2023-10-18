@@ -155,7 +155,7 @@ function default_cors_origins( origin, callback ) {
 }
 
 
-async function bootService() {
+async function startWsService() {
   const settings = await asyncReadSettings();
   const {
     ports               = [ 2000 ],
@@ -176,10 +176,10 @@ async function bootService() {
     ports ,
   });
 }
-module.exports.bootService = bootService;
+module.exports.startService = startWsService;
 
 if ( require.main === module ) {
-  bootService();
+  startWsService();
 }
 
 

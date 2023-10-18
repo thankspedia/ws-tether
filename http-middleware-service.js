@@ -5,9 +5,7 @@
 
 const express    = require('express');
 const cors       = require( 'cors' );
-const {
-  startService,
-} = require('./service-utils.js');
+const { startService  } = require('./service-utils.js');
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
@@ -119,7 +117,7 @@ const startHttpMiddlewareService = ()=>{
 
   startService( createService );
 };
-module.exports.bootService                = startHttpMiddlewareService;
+module.exports.startService   = startHttpMiddlewareService;
 
 
 if ( require.main === module ) {
