@@ -9,7 +9,7 @@
     "services" : [
       {
         "type" : "http",
-        "context_factory" :"./test2/start-test-context-factory.js",
+        "context_factory" :"asynchronous-context-rpc/test/start-test-context-factory.js",
         "purge_require_cache" : false,
         "static_paths":[],
         "ports": [ 2012 ],
@@ -20,7 +20,7 @@
       },
       {
         "type" : "http",
-        "context_factory" :"./test2/start-test-context-factory.js",
+        "context_factory" :"asynchronous-context-rpc/test/start-test-context-factory.js",
         "purge_require_cache" : false,
         "static_paths":[],
         "ports": [ 2018 ],
@@ -28,9 +28,22 @@
           "http://localhost:2018"
         ],
         "end": true
+      },
+      {
+        "type" : "ws",
+        "context_factory" :"asynchronous-context-rpc/test/ws-backend-respapi-test-context-factory.js",
+        "purge_require_cache" : false,
+        "static_paths":[],
+        "path":  "/foo",
+        "ports": [ 3953 ],
+        "cors_origins" : [
+          "http://localhost:3953"
+        ],
+        "end": true
       }
     ]
   },
+
   "--async_context_backend" : {
     "context_factory" :"./test/http-callapi-test-context-factory.js",
     "purge_require_cache" : false,

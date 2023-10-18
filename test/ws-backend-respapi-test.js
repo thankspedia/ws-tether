@@ -3,6 +3,8 @@
 require('asynchronous-context/settings').filenameOfSettings( 'ws-backend-respapi-test-context-factory.settings.json' );
 require('asynchronous-context/env').config();
 
+const { createSimpleSemaphore } = require('asynchronous-context-rpc/simple-semaphore');
+
 Object.assign( require('util').inspect.defaultOptions, {
   depth  : null,
   colors : false,
@@ -42,32 +44,6 @@ const filter = (v, allowed_fields =[ 'reason','status_code'])=>({
         .entries(v.value)
         .filter( ([k,v])=>allowed_fields.includes(k)))
 });
-
-function createSimpleSemaphore() {
-  let __msg = null;
-  let __fn = null;
-
-  const result =  function simple_semaphore( msg ) {
-    if ( msg !== undefined ) {
-      __msg = msg;
-    }
-    if ( __fn ) {
-      __fn(__msg);
-    } else {
-      __fn = true;
-    }
-  };
-
-  result.set = function(fn) {
-    if ( __fn ) {
-      fn(__msg);
-    } else {
-      __fn = fn;
-    }
-  };
-
-  return result;
-}
 
 describe( 'http-middleware-test', async ()=>{
   await before( async ()=>{

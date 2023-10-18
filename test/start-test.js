@@ -5,6 +5,8 @@
 require( 'asynchronous-context/settings' ).filenameOfSettings( './start-test.settings.json' );
 require( 'asynchronous-context/env'      ).config();
 
+const { createSimpleSemaphore } = require('asynchronous-context-rpc/simple-semaphore');
+
 Object.assign( require('util').inspect.defaultOptions, {
   depth  : null,
   colors : false,
@@ -18,6 +20,7 @@ Object.assign( require('util').inspect.defaultOptions, {
 const assert = require( 'node:assert/strict' );
 const { test, describe, it, before, after }  = require( 'node:test' );
 const { spawn } = require( 'node:child_process' );
+const { WebSocket } = require( 'ws' );
 
 const is_remote = true;
 function createContext() {
@@ -127,5 +130,51 @@ describe( 'it as', async ()=>{
       }
     });
   });
+
+  await it( 'as WebSocket no.1' , async()=>{
+    let resolve = createSimpleSemaphore();
+    let reject  = createSimpleSemaphore();
+
+    const ws = new WebSocket( 'ws://localhost:3953/foo' );
+
+    ws.on('error', (...args)=>{
+      console.error('error!', ...args );
+      reject('foo');
+    });
+
+    ws.on('open', function open() {
+      setTimeout(()=>{
+        ws.send( JSON.stringify({
+          command_type : "invoke",
+          command_value : {
+            method_path : [ 'ws_hello_world', ],
+            method_args : [ 1, 2, 3 ],
+          },
+        }));
+      },5000);
+    });
+
+    ws.on( 'message', function message(__data) {
+      const data = JSON.parse( __data.toString() );
+      console.log( 'received a message', data );
+
+      if ( data.message === 'shutdown immediately' ) {
+        console.log( data );
+        console.log( 'okay,sir' );
+        ws.close();
+        resolve( 'okay,sir' );
+      }
+    });
+
+    console.log(
+      await new Promise((__resolve,__reject)=>{
+        resolve.set( __resolve );
+        reject .set( __reject  );
+      })
+    );
+  });
+
+
+
 }).then((e)=>console.log(e,'foo')).catch( (e)=>{console.log(e) });
 
