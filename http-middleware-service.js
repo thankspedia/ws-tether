@@ -7,12 +7,26 @@ const express    = require('express');
 const cors       = require( 'cors' );
 const {
   startService,
-  validateSettings,
 } = require('./service-utils.js');
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
+
 /*
+ *   default_cors_origins
+ * ===========================================================================
+ * This function is applied as the default function of the `cors` fiels in the
+ * settings file.
+ *
+ */
+function default_cors_origins( origin, callback ) {
+  callback( null, /.*/ )
+}
+
+
+/*
+ *   loadService()
+ * =============================================================================
  * loadService : function(
  *   input: array(
  *     serviceSettings : object(
@@ -25,17 +39,28 @@ const { loadContextFactory  } = require( './context-factory-loader.js' );
  *     ),
  *   ),
  * )
- *
  */
 const loadService = ( serviceSettings )=>{
   let {
-    ports               = [ 2000 ],
-    cors_origins        = default_cors_origins,
+    ports               = [],
+    cors_origins        = 'ALLOW_ALL',
     context_factory     = (()=>{throw new Error('context_factory is not defined')})(),
     purge_require_cache = false,
   } = serviceSettings;
 
   console.log( `Starting a middleware service with context_factory=${context_factory}` );
+
+
+  if ( cors_origins === 'ALLOW_ALL' ) {
+    console.error( 'WARNING : CORS SETTING WAS SPECIFIED "ALLOW_ALL". THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
+    cors_origins = default_cors_origins;
+  }
+
+  if ( ( ports.length ?? 0 ) < 1 ) {
+    console.error( `WARNING field 'ports' is missing in the setting file '${filenameOfSettings()}' the default values are applied.` );
+    ports = [ 2000 ];
+  }
+
 
   const contextFactory = loadContextFactory( context_factory, purge_require_cache );
 
@@ -87,7 +112,7 @@ module.exports.loadService = loadService;
 const startHttpMiddlewareService = ()=>{
   const createService =
     async ()=>{
-      const settings         = validateSettings( await asyncReadSettings() );
+      const settings         = await asyncReadSettings();
       const serviceSettings  = settings?.async_context_backend ?? {};
       return loadService( serviceSettings );
     };

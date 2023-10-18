@@ -99,6 +99,14 @@ function startService( __createService ) {
 }
 module.exports.startService = startService;
 
+
+/*
+ * createLoadServiceAfterReadSettings()
+ * =====================================================================================
+ *
+ * Wrap the given loadService() function with a function that automatically
+ * loads the current settings file and pass it to the `loadService()` function.
+ */
 const createLoadServiceAfterReadSettings = (loadService)=>{
   function loadServiceAfterReadSettings() {
     return loadService( readSettings() );
@@ -108,24 +116,14 @@ const createLoadServiceAfterReadSettings = (loadService)=>{
 module.exports.createLoadServiceAfterReadSettings = createLoadServiceAfterReadSettings;
 
 
-
-function default_cors_origins( origin, callback ) {
-  callback( null, /.*/ )
-}
-
+/*
+ * validateSettings()
+ * ==================================================================================
+ * This function is not used anymore.
+ */
 const validateSettings = (settings) =>{
-  const result = preventUndefined( settings ,  schema.t_async_context_service_settings() );
-
-  if ( ( result?.async_context_backend?.ports?.length ?? 0 ) < 1 ) {
-    console.error( `WARNING field 'ports' is missing in the setting file '${filenameOfSettings()}' the default values are applied.` );
-  }
-  if ( result.async_context_backend.cors_origins === 'ALLOW_ALL' ) {
-    console.error( 'WARNING : CORS SETTING WAS SPECIFIED "ALLOW_ALL". THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
-    result.async_context_backend.cors_origins = default_cors_origins;
-  }
-  return result;
+  return  preventUndefined( settings ,  schema.t_async_context_service_settings() );
 };
-module.exports.validateSettings = validateSettings;
 
 
 

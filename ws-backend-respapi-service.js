@@ -2,10 +2,7 @@
 const express    = require('express');
 const cors       = require( 'cors' );
 
-const {
-  startService,
-  validateSettings,
-} = require('./service-utils.js');
+const { startService } = require('./service-utils.js');
 
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
@@ -159,7 +156,7 @@ function default_cors_origins( origin, callback ) {
 
 
 async function bootService() {
-  const settings = validateSettings( await asyncReadSettings() );
+  const settings = await asyncReadSettings();
   const {
     ports               = [ 2000 ],
     cors_origins        = default_cors_origins,

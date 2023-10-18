@@ -1,8 +1,7 @@
 
-const { startService, createLoadServiceAfterReadSettings }    = require('./service-utils.js');
-
-const { loadService : httpLoadService } = require( './http-middleware-service.js' );
-const { loadService : wsLoadService   } = require( './ws-backend-respapi-service.js' );
+const { startService, createLoadServiceAfterReadSettings } = require('./service-utils.js');
+const { loadService : httpLoadService }                    = require( './http-middleware-service.js' );
+const { loadService : wsLoadService   }                    = require( './ws-backend-respapi-service.js' );
 
 const serviceMap = {
   http : httpLoadService,
