@@ -4,7 +4,7 @@
 
 This is an Web API framework which is resembling to traditional Remote Procedure
 Call.  This module is developped as a subproject of [Kombucha.js][kombucha]
-framework.
+framework. For further information, see the documentation of [Kombucha.js][kombucha].
 
 
 [kombucha]:                          https://github.com/kombucha-js/
