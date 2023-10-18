@@ -135,7 +135,7 @@ describe( 'it as', async ()=>{
     let resolve = createSimpleSemaphore();
     let reject  = createSimpleSemaphore();
 
-    const ws = new WebSocket( 'ws://localhost:3953/foo' );
+    const ws = new WebSocket( 'ws://localhost:3959/foo' );
 
     ws.on('error', (...args)=>{
       console.error('error!', ...args );
