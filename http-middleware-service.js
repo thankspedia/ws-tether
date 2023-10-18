@@ -8,7 +8,7 @@ const cors       = require( 'cors' );
 const {
   startService,
   validateSettings,
-} = require('./service.js');
+} = require('./service-utils.js');
 const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
 const { loadContextFactory  } = require( './context-factory-loader.js' );
 
