@@ -27,6 +27,22 @@ framework. For further information, see the documentation of [Kombucha.js][kombu
 [beep]:                              https://github.com/kombucha-js/beep/
 
 
+ Command Utilities
+------------------
+
+- bin/start-http-middleware-service.js
+- bin/start-service.js
+- bin/start-ws-service.js
+
+```sh
+SETTINGS='path-to-settings-file.settings' start-service
+```
+
+```sh
+SETTINGS='path-to-settings-file.settings' start-ws-service
+```
+
+
 
  API Reference
 ---------------
