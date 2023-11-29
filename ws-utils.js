@@ -1,5 +1,12 @@
 const WebSocket = require( 'ws' );
 
+const WEBSOCKET = {
+  CONNECTING : 0,  // Socket has been created. The connection is not yet open.
+  OPEN       : 1,  // The connection is open and ready to communicate.
+  CLOSING    : 2,  // The connection is in the process of closing.
+  CLOSED     : 3,  // The connection is closed or couldn't be opened.
+}
+
 function awaitOpenWeird( websocket, iterationCount = 100 ) {
   let ctr = iterationCount;
   return new Promise( (resolve,reject)=>{
@@ -28,21 +35,22 @@ function await_websocket( websocket ) {
   let flag = false;
   return new Promise( (resolve,reject)=>{
     switch ( websocket.readyState ) {
-      case WebSocket.CONNECTING :
-        websocket.on( 'open', ()=>{
+      case WEBSOCKET.CONNECTING :
+        // websocket.on
+        websocket.addEventListener( 'open', ()=>{
           if ( ! flag ) {
             flag = true;
             resolve();
           }
         });
         break;
-      case WebSocket.OPEN :
+      case WEBSOCKET.OPEN :
         resolve();
         break;
-      case WebSocket.CLOSING :
-      case WebSocket.CLOSED :
+      case WEBSOCKET.CLOSING :
+      case WEBSOCKET.CLOSED :
       default:
-        reject();
+        reject('the specified WebSocket is already closed');
         break;
     }
   });
