@@ -6,7 +6,7 @@ import { createContext  } from  'asynchronous-context-rpc/ws-frontend-callapi-co
 function App() {
   async function handleClick() {
     try {
-      const {context} =  await createContext({ websocket: new WebSocket( 'ws://schizostylis.local:3632/foo' ) });
+      const {context} =  await createContext({ websocket : 'ws://schizostylis.local:3632/foo' } );
       alert('before');
       alert( await context.say_hello() );
       alert('after');

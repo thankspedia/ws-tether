@@ -1,4 +1,7 @@
-const WebSocket = require( 'ws' );
+
+
+const UtilWebSocket = (()=> typeof WebSocket !== 'undefined' ? WebSocket : require('ws'))();
+
 
 const WEBSOCKET = {
   CONNECTING : 0,  // Socket has been created. The connection is not yet open.
@@ -60,13 +63,12 @@ module.exports.await_websocket = await_websocket;
 
 function create_websocket( ws_spec ) {
   if ( typeof ws_spec === 'string' ) {
-    return new WebSocket( ws_spec );
+    return new UtilWebSocket( ws_spec );
   } else {
     return ws_spec;
   }
 }
 module.exports.create_websocket = create_websocket;
-
 
 
 async function await_sleep( t ) {
@@ -75,4 +77,4 @@ async function await_sleep( t ) {
   });
   return true;
 }
-module.exports.await_sleep = await_sleep;
+module.exports.await_sleep  = await_sleep ;

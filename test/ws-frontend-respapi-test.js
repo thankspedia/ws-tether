@@ -13,7 +13,7 @@ const { METHOD_POST  } = require( 'asynchronous-context-rpc' );
 
 const { create_callapi } = require( 'asynchronous-context-rpc/callapi.js' );
 const { websocket_callapi_handler } = require( 'asynchronous-context-rpc/ws-callapi' );
-const { create_websocket, await_websocket, await_sleep } = require( 'asynchronous-context-rpc/ws-utils.js' );
+const { create_websocket, await_websocket, await_sleep } = require( 'asynchronous-context-rpc/ws-utils' );
 const { set_typesafe_tags } = require( 'runtime-typesafety' );
 
 const {
