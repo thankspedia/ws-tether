@@ -1,28 +1,12 @@
 {
-  "env" : {
-  },
-  "crypto_web_token" : {
-    "tokenizer_password" : "helloworldfoobarbazs",
-    "end": true
-  },
-  "async_context_backend" : {
-    "context_factory" :"asynchronous-context-rpc/test/http-middleware-test-context-factory",
-    "purge_require_cache" : false,
-    "static_paths":[],
-    "ports": [ 2003 ],
-    "cors_origins" : [
-      "http://localhost:2003"
-    ],
-    "end": true
-  },
   "async_context_websocket_backend" : {
-    "context_factory" :"asynchronous-context-rpc/test/ws-frontend-respapi-test-context-factory.js",
+    "context_factory" :"asynchronous-context-rpc/examples/async-context-rpc-example/backend/ws-frontend-respapi-test-context-factory.js",
     "purge_require_cache" : false,
     "static_paths":[],
     "ports": [ 3632 ],
     "path" : "/foo",
     "cors_origins" : [
-      "http://localhost:3001"
+      "http://localhost:3000"
     ],
     "end": true
   },
