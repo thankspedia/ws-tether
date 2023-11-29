@@ -14,7 +14,7 @@
     "frontend-old-test-b": "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
     "frontend-old-test"  : "node --inspect --inspect-brk /usr/local/lib/node_modules/jest/bin/jest --watch --watchAll --",
 
-    "test" : "cd test; node --test",
+    "test" : "cd test; node --test --test-concurrency=1 *test.js",
 
     "test-callapi" : "node callapi-test.js",
     "prepare-test-http-middleware" : "node -r ./http-middleware-test.init.js ./http-middleware-service.js",
