@@ -3,6 +3,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+import { createContext as __createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
+
 function App() {
   const [count, setCount] = useState(0)
 
