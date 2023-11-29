@@ -42,6 +42,9 @@ SETTINGS='path-to-settings-file.settings' start-service
 SETTINGS='path-to-settings-file.settings' start-ws-service
 ```
 
+```javascript
+  require( 'asynchronous-context/settings' ).filenameOfSettings( './ws-callapi-test-context-factory.settings.json' );
+```
 
 
  API Reference
