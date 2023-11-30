@@ -1,7 +1,7 @@
 const express                = require( 'express' );
 const bodyParser             = require( 'body-parser' );
 const url                    = require( 'url' );
-const { AsyncContextResult } = require( 'asynchronous-context/result' );
+// const { AsyncContextResult } = require( 'asynchronous-context/result' );
 const { respapi }            = require( 'asynchronous-context-rpc/respapi' );
 
 const {
@@ -31,6 +31,96 @@ module.exports.METHOD_CONNECT  = METHOD_CONNECT;
 module.exports.METHOD_OPTIONS  = METHOD_OPTIONS;
 module.exports.METHOD_TRACE    = METHOD_TRACE;
 module.exports.METHOD_PATCH    = METHOD_PATCH;
+
+const MSG_SUCCEEDED             = 'succeeded';
+const MSG_ERROR                 = 'error';
+module.exports.MSG_SUCCEEDED    = MSG_SUCCEEDED;
+module.exports.MSG_ERROR        = MSG_ERROR;
+
+function createSuccessful(value) {
+  const status = MSG_SUCCEEDED;
+  return {
+    status,
+    value,
+  };
+}
+
+function createErroneous(value) {
+  const status = MSG_ERROR;
+  value = filterErrorToJSON( value );
+  return {
+    status,
+    value,
+  };
+}
+
+
+const filterErrorToJSON = (()=>{
+
+  function filterErrorToJSON( input ) {
+    const output =  __filterErrorToJSON( input, 0 );
+    // console.log( 'filterErrorToJSON - Object.keys( input )', Object.keys( input ) );
+    // console.log( 'filterErrorToJSON', 'input', input , 'output', output );
+    return output;
+  }
+
+  function getStackFromError(o) {
+    if ( o == null ) {
+      return o;
+    } else if ( typeof o === 'object' ) {
+      if ( 'stack' in o ) {
+        if ( Array.isArray( o.stack ) ) {
+          return o.stack;
+        } else {
+          if ( typeof o.stack === 'string' ) {
+            return o.stack.split('\n');
+          } else {
+            // 1. this could be erroneous value but we ignore it.
+            // 2. ensure it to be an array.
+            return [ o.stack] ;
+          }
+        }
+      } else {
+        // ensure the result is an array.
+        return [];
+      }
+    } else {
+      // cannot retrieve stack; but we have to ensure it to be an array.
+      return [];
+    }
+  }
+
+  const inspect_custom_symbol = Symbol.for('nodejs.util.inspect.custom');
+  const { inspect } = require( 'node:util' );
+
+  function __filterErrorToJSON(o, depth ) {
+    if ( o instanceof Error ) {
+      const REPLACING_PROPERTIES = ['message', 'stack', 'cause'];
+      return Object.assign(
+        {},
+        { message : ((typeof o === 'object') && ('messageObject' in o ) ) ? __filterErrorToJSON( o.messageObject, depth+1 ) : o.message },
+        { stack   : getStackFromError( o ) },
+        { cause   : __filterErrorToJSON( o.cause, depth+1 )},
+        ... Object.keys(o).filter( e=>! REPLACING_PROPERTIES.includes(e)).map(
+          k=>({
+            [k] :__filterErrorToJSON(o[k],depth+1)
+          })),
+      );
+    } else if ( o === null ) {
+      return null;
+    } else if ( o === undefined ) {
+      return undefined;
+    } else if ( (typeof o === 'object') && (inspect_custom_symbol in o ) && ( typeof o[inspect_custom_symbol] === 'function' ) ) {
+      return o[inspect_custom_symbol]( depth, {}, inspect  );
+    } else if ( typeof o === 'object' ) {
+      return Object.assign( Array.isArray( o ) ? [] : {}, ... Object.keys(o).map(k=>({[k]:__filterErrorToJSON(o[k], depth+1)})));
+    } else {
+      return o;
+    }
+  }
+
+  return filterErrorToJSON;
+})();
 
 
 /**
@@ -221,11 +311,7 @@ function __create_middleware( contextFactory ) {
           });
 
           // 8) Send the generated response.
-          res.status(400).json(
-            recursivelyUnprevent(
-              AsyncContextResult.createErroneous(
-                new Error('found malformed formatted data in body')
-              ))).end();
+          res.status(400).json( createErroneous( new Error('found malformed formatted data in body' ))).end();
 
           done = true;
           // Abort the process.
@@ -349,16 +435,11 @@ function __create_middleware( contextFactory ) {
             } else {
               // Otherwise let it treat as the default does.
               result =
-                 recursivelyUnprevent(
-                  AsyncContextResult.createSuccessful(
-                    respapi_result.value ));
+                createSuccessful( respapi_result.value );
             }
           } else if ( respapi_result.status === 'error' ) {
             status_code = 200;
-            result =
-              recursivelyUnprevent(
-                AsyncContextResult.createErroneous(
-                  respapi_result.value ));
+            result = createErroneous( respapi_result.value );
 
           } else if ( respapi_result.status === 'not_found' ) {
             status_code = 404;
@@ -428,11 +509,7 @@ function __create_middleware( contextFactory ) {
           console.log( 'zvlSApLK8T4', err );
 
           // 8) Send the generated response.
-          res.status(500).json(
-            recursivelyUnprevent(
-              AsyncContextResult.createErroneous( err )
-            )
-          ).end();
+          res.status(500).json( createErroneous( err ) ).end();
 
           done = true;
           // Abort the process.
@@ -469,7 +546,7 @@ function __create_middleware( contextFactory ) {
               context.logger.output(
                 {
                   type  : 'double_unexpected_error',
-                  value : recursivelyUnprevent( AsyncContextResult.createErroneous(err) ),
+                  value : createErroneous( err ),
                 }
               );
             }
