@@ -1,14 +1,19 @@
+import React from "react";
+
 import logo from './logo.svg';
 import './App.css';
 import { createContext  } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
+import {WS} from './ws.js';
+
 
 
 function App() {
+  const ref = React.useRef( null );
   async function handleClick() {
     try {
-      const {context} =  await createContext({ websocket : 'ws://schizostylis.local:3632/foo' } );
+      const ws =  ref.current;
       alert('before');
-      alert( await context.say_hello() );
+      alert( await ws.backend.how_are_you(1,2,3) );
       alert('after');
     } catch (e){
       console.error(e);
@@ -16,6 +21,18 @@ function App() {
       alert(e);
     }
   }
+
+  React.useEffect(()=>{
+    if ( ref.current === null ) {
+      ref.current = new WS();
+    }
+
+    ref.current.start();
+    return ()=>{
+      ref.current.stop();
+      ref.current = null;
+    };
+  });
 
   return (
     <div className="App">

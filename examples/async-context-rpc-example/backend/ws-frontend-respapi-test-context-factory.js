@@ -28,7 +28,12 @@ Hello.defineMethod(
      * See `ws-backend-respapi.js`.
      * (Fri, 16 Jun 2023 14:01:43 +0900)
      */
+
+    this.logger.output( 'yes, how_are_you', this.frontend );
+
     await this.frontend.fine_thank_you( a+1, b+1, c+1 );
+
+    return 'called how_are_you()';
   },
   METHOD_POST,
   'WEBSOCKET_METHOD',

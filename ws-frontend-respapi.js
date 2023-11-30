@@ -1,5 +1,5 @@
 
-const { respapi } = require( './respapi.js' );
+const { respapi } = require( './respapi' );
 const { schema, trace_validator } = require( 'vanilla-schema-validator' );
 
 const t_handle_message = schema.compile`

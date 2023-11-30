@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Implement Remote Procedure Call in Node.js (beta)",
   "main": "service.js",
+  "type": "commonjs",
   "bin": {
     "start-http-middleware-service" : "bin/start-http-middleware-service.js",
     "start-ws-service"              : "bin/start-ws-service.js",

@@ -1,4 +1,15 @@
 
+/**
+ * Note : LIMITATION OF CALLAPI
+ *
+ * WebSocket Callapi cannot take return values due to WebSocket's limitation.
+ * A WebSocket message is always a uni-directional message. Returning values
+ * requires bi-directional messages; returning values cannot be implemented
+ * due to this limitation.
+ *
+ * (Wed, 29 Nov 2023 18:13:02 +0900)
+ *
+ */
 
 function websocket_callapi_handler( nargs ) {
   const {
