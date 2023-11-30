@@ -1,6 +1,6 @@
-const { AsyncContext }            = require( 'asynchronous-context' );
-const { set_typesafe_tags }       = require( 'runtime-typesafety' );
-const { middleware, METHOD_POST } = require( 'asynchronous-context-rpc/http-middleware' );
+import { AsyncContext }           from 'asynchronous-context' ;
+import { set_typesafe_tags }      from 'runtime-typesafety' ;
+import { middleware, METHOD_POST } from 'asynchronous-context-rpc/http-middleware' ;
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );

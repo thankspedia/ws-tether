@@ -1,41 +1,21 @@
-const express                = require( 'express' );
-const bodyParser             = require( 'body-parser' );
-const url                    = require( 'url' );
-// const { AsyncContextResult } = require( 'asynchronous-context/result' );
-const { respapi }            = require( 'asynchronous-context-rpc/respapi' );
+import express         from 'express' ;
+import bodyParser      from 'body-parser';
+import url             from 'url';
+import { respapi }     from 'asynchronous-context-rpc/respapi';
 
-const {
-  preventUndefined,
-  unprevent,
-  recursivelyUnprevent
-} = require( 'prevent-undefined' );
+export const AUTO_CONNECTION = '__AUTO_CONNECTION__';
+export const METHOD_GET      = 'GET';
+export const METHOD_HEAD     = 'HEAD';
+export const METHOD_POST     = 'POST';
+export const METHOD_PUT      = 'PUT';
+export const METHOD_DELETE   = 'DELETE';
+export const METHOD_CONNECT  = 'CONNECT';
+export const METHOD_OPTIONS  = 'OPTIONS';
+export const METHOD_TRACE    = 'TRACE';
+export const METHOD_PATCH    = 'PATCH';
 
-const AUTO_CONNECTION = '__AUTO_CONNECTION__';
-const METHOD_GET      = 'GET';
-const METHOD_HEAD     = 'HEAD';
-const METHOD_POST     = 'POST';
-const METHOD_PUT      = 'PUT';
-const METHOD_DELETE   = 'DELETE';
-const METHOD_CONNECT  = 'CONNECT';
-const METHOD_OPTIONS  = 'OPTIONS';
-const METHOD_TRACE    = 'TRACE';
-const METHOD_PATCH    = 'PATCH';
-
-module.exports.AUTO_CONNECTION = AUTO_CONNECTION;
-module.exports.METHOD_GET      = METHOD_GET;
-module.exports.METHOD_HEAD     = METHOD_HEAD;
-module.exports.METHOD_POST     = METHOD_POST;
-module.exports.METHOD_PUT      = METHOD_PUT;
-module.exports.METHOD_DELETE   = METHOD_DELETE;
-module.exports.METHOD_CONNECT  = METHOD_CONNECT;
-module.exports.METHOD_OPTIONS  = METHOD_OPTIONS;
-module.exports.METHOD_TRACE    = METHOD_TRACE;
-module.exports.METHOD_PATCH    = METHOD_PATCH;
-
-const MSG_SUCCEEDED             = 'succeeded';
-const MSG_ERROR                 = 'error';
-module.exports.MSG_SUCCEEDED    = MSG_SUCCEEDED;
-module.exports.MSG_ERROR        = MSG_ERROR;
+export const MSG_SUCCEEDED   = 'succeeded';
+export const MSG_ERROR       = 'error';
 
 function createSuccessful(value) {
   const status = MSG_SUCCEEDED;
@@ -617,5 +597,6 @@ function create_middleware( contextFactory ) {
   return router;
 }
 
-module.exports.create = create_middleware;
+export {create_middleware as create };
+export {create_middleware  };
 

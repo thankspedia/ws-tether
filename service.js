@@ -1,7 +1,7 @@
 
-const { startService, createLoadServiceAfterReadSettings } = require('./service-utils.js');
-const { loadService : httpLoadService }                    = require( './http-middleware-service.js' );
-const { loadService : wsLoadService   }                    = require( './ws-backend-respapi-service.js' );
+import { startService, createLoadServiceAfterReadSettings } from './service-utils.js';
+import { loadService as httpLoadService }                   from './http-middleware-service.js' ;
+import { loadService as wsLoadService   }                   from './ws-backend-respapi-service.js' ;
 
 const serviceMap = {
   http : httpLoadService,

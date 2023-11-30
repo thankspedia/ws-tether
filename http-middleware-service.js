@@ -1,14 +1,14 @@
 
-{
-  require( 'asynchronous-context/env' ).config();
-}
+import env from 'asynchronous-context/env';
 
-const express    = require('express');
-const cors       = require( 'cors' );
-const { startService  } = require('./service-utils.js');
-const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
-const { loadContextFactory  } = require( './context-factory-loader.js' );
+import express    from 'express';
+import cors       from 'cors' ;
+import { startService  }                         from './service-utils.js';
+import { filenameOfSettings, asyncReadSettings } from 'asynchronous-context/settings' ;
+import { loadContextFactory  }                   from './context-factory-loader.js' ;
+import { create }                                from './http-middleware' ;
 
+env.config();
 
 /*
  *   default_cors_origins
@@ -72,8 +72,8 @@ const loadService = ( serviceSettings )=>{
       next();
     });
 
-    app.use( cors( { origin : cors_origins } ) );
-    app.use( '/api',  require( './http-middleware' ).create( contextFactory ));
+    app.use(           cors( { origin : cors_origins } ) );
+    app.use( '/api',   create( contextFactory )    );
     app.use( '/blank', (req,res,next)=>{
       res.json({status:'succeeded', value:'blank' }).end();
     });
