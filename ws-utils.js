@@ -1,7 +1,6 @@
 
 
-const UtilWebSocket = (()=> typeof WebSocket !== 'undefined' ? WebSocket : require('ws'))();
-
+const UtilWebSocket = (async ()=> typeof WebSocket !== 'undefined' ? WebSocket : await import('ws'))();
 
 const WEBSOCKET = {
   CONNECTING : 0,  // Socket has been created. The connection is not yet open.
@@ -31,7 +30,7 @@ function awaitOpenWeird( websocket, iterationCount = 100 ) {
     exec();
   });
 }
-module.exports.awaitOpenWeird = awaitOpenWeird;
+export { awaitOpenWeird as awaitOpenWeird };
 
 
 function await_websocket( websocket ) {
@@ -58,7 +57,7 @@ function await_websocket( websocket ) {
     }
   });
 }
-module.exports.await_websocket = await_websocket;
+export { await_websocket as await_websocket };
 
 
 function create_websocket( ws_spec ) {
@@ -68,7 +67,7 @@ function create_websocket( ws_spec ) {
     return ws_spec;
   }
 }
-module.exports.create_websocket = create_websocket;
+export { create_websocket as create_websocket };
 
 
 async function await_sleep( t ) {
@@ -77,4 +76,5 @@ async function await_sleep( t ) {
   });
   return true;
 }
-module.exports.await_sleep  = await_sleep ;
+export { await_sleep as await_sleep  } ;
+

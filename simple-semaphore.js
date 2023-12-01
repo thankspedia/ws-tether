@@ -1,5 +1,5 @@
 
-function createSimpleSemaphore() {
+export function createSimpleSemaphore() {
   let __msg = null;
   let __fn = null;
 
@@ -25,4 +25,3 @@ function createSimpleSemaphore() {
   return result;
 }
 
-module.exports.createSimpleSemaphore = createSimpleSemaphore;

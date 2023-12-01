@@ -92,7 +92,7 @@ const resolve_callapi_method_path = typesafe_function(
     `,
   }
 );
-module.exports.resolve_callapi_method_path = resolve_callapi_method_path;
+export { resolve_callapi_method_path };
 
 
 const respapi = typesafe_function(
@@ -150,7 +150,7 @@ const respapi = typesafe_function(
   }
 );
 
-module.exports.respapi = respapi;
+export { respapi };
 
 
 
@@ -164,7 +164,7 @@ const t_respapi_message = schema.compile`
     ),
   )
 `();
-module.exports.t_respapi_message = t_respapi_message;
+export { t_respapi_message };
 
 
 

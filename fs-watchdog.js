@@ -1,6 +1,6 @@
 
-const fs         = require( 'fs' );
-const path       = require( 'node:path' );
+import  fs         from 'fs' ;
+import  path       from 'node:path';
 
 function startFileSytemWatchdog( /*either async and non-async */ onDetected, watchingFile  = './' ) {
   let modifiedTime = new Date().getTime();
@@ -47,4 +47,4 @@ function startFileSytemWatchdog( /*either async and non-async */ onDetected, wat
   };
 }
 
-module.exports.startFileSytemWatchdog = startFileSytemWatchdog;
+export { startFileSytemWatchdog };

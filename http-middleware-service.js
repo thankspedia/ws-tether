@@ -104,7 +104,8 @@ const loadService = ( serviceSettings )=>{
     }
   ];
 };
-module.exports.loadService = loadService;
+
+export { loadService };
 
 
 const startHttpMiddlewareService = ()=>{
@@ -117,9 +118,7 @@ const startHttpMiddlewareService = ()=>{
 
   startService( createService );
 };
-module.exports.startService   = startHttpMiddlewareService;
+
+export { startHttpMiddlewareService as startService };
 
 
-if ( require.main === module ) {
-  startHttpMiddlewareService();
-}

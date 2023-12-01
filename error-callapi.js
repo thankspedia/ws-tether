@@ -23,6 +23,6 @@ function create_error_callapi_handler( message ) {
 
 const error_callapi_handler = create_error_callapi_handler( 'Currently the API service is not available. Try it again, later.' );
 
-module.exports.error_callapi_handler         = error_callapi_handler;
-module.exports.create_error_callapi_handler  = create_error_callapi_handler;
+export { error_callapi_handler  };
+export { create_error_callapi_handler   } ;
 

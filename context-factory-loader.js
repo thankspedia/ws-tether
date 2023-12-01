@@ -5,7 +5,7 @@ function purgeRequireCache() {
   });
 }
 
-function loadContextFactory( /* the package name of */ path_to_context_factory, purge_require_cache ) {
+export function loadContextFactory( /* the package name of */ path_to_context_factory, purge_require_cache ) {
   if ( typeof path_to_context_factory  !== 'string' || path_to_context_factory.trim().length === 0 ) {
     throw new Error( `package name is invalid : the specified value '${ path_to_context_factory }' is '${typeof path_to_context_factory }'` );
   }
@@ -34,4 +34,4 @@ function loadContextFactory( /* the package name of */ path_to_context_factory, 
     );
   }
 }
-module.exports.loadContextFactory = loadContextFactory;
+

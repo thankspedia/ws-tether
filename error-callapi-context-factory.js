@@ -1,6 +1,6 @@
 
-const { create_callapi         } = require( './callapi.js' );
-const { create_error_callapi_handler  } = require( './error-callapi' );
+import  { create_callapi                } from './callapi.js' ;
+import  { create_error_callapi_handler  } from './error-callapi' ;
 
 function createErrorContext( nargs ) {
   if ( ! ( 'error_message' in  nargs ) ) {
@@ -9,5 +9,7 @@ function createErrorContext( nargs ) {
   const callapi_handler = create_error_callapi_handler( nargs.error_message );
   return create_callapi({ ...nargs, callapi_handler });
 }
-module.exports.createContext = createErrorContext;
+
+export { createErrorContext as createContext };
+// module.exports.createContext = createErrorContext;
 

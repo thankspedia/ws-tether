@@ -1,6 +1,6 @@
 
-const { respapi } = require( './respapi' );
-const { schema, trace_validator } = require( 'vanilla-schema-validator' );
+import { respapi } from './respapi' ;
+import { schema, trace_validator } from 'vanilla-schema-validator' ;
 
 const t_handle_message = schema.compile`
   object(
@@ -9,7 +9,7 @@ const t_handle_message = schema.compile`
     data      : object(),
   ),
 `();
-module.exports.t_handle_message = t_handle_message;
+export { t_handle_message as t_handle_message };
 
 const t_respapi_message = schema.compile`
   object(
@@ -20,7 +20,7 @@ const t_respapi_message = schema.compile`
     ),
   )
 `();
-module.exports.t_respapi_message = t_respapi_message;
+export { t_respapi_message as t_respapi_message };
 
 
 async function handle_on_message_of_ws_frontend_respapi( nargs ) {
@@ -78,7 +78,7 @@ async function handle_on_message_of_ws_frontend_respapi( nargs ) {
 
   return context
 }
-module.exports.handle_on_message_of_ws_frontend_respapi = handle_on_message_of_ws_frontend_respapi;
+export { handle_on_message_of_ws_frontend_respapi as handle_on_message_of_ws_frontend_respapi };
 
 
 
@@ -101,6 +101,6 @@ function on_init_websocket_of_ws_frontend_respapi( websocket, context ) {
     console.error( ...args );
   });
 }
-module.exports.on_init_websocket_of_ws_frontend_respapi = on_init_websocket_of_ws_frontend_respapi;
+export { on_init_websocket_of_ws_frontend_respapi as on_init_websocket_of_ws_frontend_respapi };
 
 

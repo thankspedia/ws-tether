@@ -172,6 +172,6 @@ async function http_callapi_handler( nargs ) {
   }
 }
 
-module.exports.http_callapi_handler = http_callapi_handler;
+export { http_callapi_handler };
 
 

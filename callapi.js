@@ -22,7 +22,7 @@ function create_callapi_overrider( args ) {
   };
 }
 
-function create_callapi( __nargs ) {
+export function create_callapi( __nargs ) {
   // duplicate the object that contains the named arguments:
   const nargs = {
     ... __nargs,
@@ -87,6 +87,5 @@ function create_callapi( __nargs ) {
   });
 }
 
-module.exports.create_callapi = create_callapi;
 
 

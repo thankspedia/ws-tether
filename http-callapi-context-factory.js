@@ -1,10 +1,10 @@
 
-const { create_callapi  } = require( './callapi.js' );
-const { http_callapi_handler  } = require( './http-callapi' );
+import { create_callapi        } from './callapi.js' ;
+import { http_callapi_handler  } from './http-callapi' ;
 
-function createContext( nargs ) {
+export function createContext( nargs ) {
   const callapi_handler = http_callapi_handler;
   return create_callapi( { ...nargs, http_method : 'POST', callapi_handler  });
 }
-module.exports.createContext = createContext;
+
 

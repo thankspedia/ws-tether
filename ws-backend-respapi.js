@@ -1,14 +1,14 @@
 
-const { WebSocketServer } = require( 'ws' );
-const { parse } = require( 'url');
+import { WebSocketServer } from 'ws' ;
+import { parse } from 'url';
 
-const {
+import {
   respapi,
   t_respapi_message,
-} = require( './respapi.js' );
+} from './respapi.js' ;
 
-const { trace_validator } = require( 'vanilla-schema-validator' );
-const { createContext   } = require( './ws-callapi-context-factory.js' );
+import { trace_validator } from 'vanilla-schema-validator' ;
+import { createContext   } from './ws-callapi-context-factory' ;
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 
@@ -36,7 +36,8 @@ function create_websocket_upgrader( on_init_websocket ) {
     });
   };
 }
-module.exports.create_websocket_upgrader = create_websocket_upgrader;
+
+export { create_websocket_upgrader as create_websocket_upgrader };
 
 
 const handle_multi_path_upgrade = ( mapper, request, socket, head )=>{
@@ -51,7 +52,7 @@ const handle_multi_path_upgrade = ( mapper, request, socket, head )=>{
   }
 };
 
-module.exports.handle_multi_path_upgrade = handle_multi_path_upgrade;
+export { handle_multi_path_upgrade };
 
 
 const create_multi_path_upgrade_handler = (mapper)=>(
@@ -59,7 +60,7 @@ const create_multi_path_upgrade_handler = (mapper)=>(
     return handle_multi_path_upgrade( mapper, request, socket, head );
   }
 );
-module.exports.create_multi_path_upgrade_handler = create_multi_path_upgrade_handler;
+export {  create_multi_path_upgrade_handler as create_multi_path_upgrade_handler };
 
 
 const get_authentication_token = (req)=>{
@@ -258,7 +259,8 @@ async function on_init_websocket_of_ws_backend( nargs ) {
     }
   )
 }
-module.exports.on_init_websocket_of_ws_backend = on_init_websocket_of_ws_backend;
+
+export { on_init_websocket_of_ws_backend as on_init_websocket_of_ws_backend };
 
 
 

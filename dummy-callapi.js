@@ -1,4 +1,4 @@
-const dummy_callapi_handler = (nargs)=>{
+export const dummy_callapi_handler = (nargs)=>{
   const {
     method_args = [],
   } = nargs;
@@ -9,6 +9,6 @@ const dummy_callapi_handler = (nargs)=>{
   }
 };
 
-module.exports.dummy_callapi_handler = dummy_callapi_handler;
+// module.exports.dummy_callapi_handler = dummy_callapi_handler;
 
 

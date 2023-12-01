@@ -43,5 +43,5 @@ function startAllService() {
     createLoadServiceAfterReadSettings(
       loadService ));
 }
-module.exports.startService = startAllService;
+export { startAllService as startService };
 

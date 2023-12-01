@@ -3,6 +3,7 @@
 require('asynchronous-context/settings').filenameOfSettings('http-middleware-test-context-factory.settings.json' );
 require('asynchronous-context/env').config();
 
+
 Object.assign( require('util').inspect.defaultOptions, {
   depth  : null,
   colors : false,

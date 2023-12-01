@@ -3,11 +3,13 @@
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
 // MODIFIED (Thu, 05 Oct 2023 19:35:35 +0900)
 // require('asynchronous-context/env').config();
-require('asynchronous-context/settings').filenameOfSettings( 'http-callapi-test.settings.json' );
+import   assert from 'node:assert/strict' ;
+import  { test, describe, it, before, after }  from 'node:test' ;
+import  { create_callapi } from './callapi.js' ;
 
-const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after }  = require( 'node:test' );
-const { create_callapi } = require( './callapi.js' );
+import settings from 'asynchronous-context/settings';
+
+settings.filenameOfSettings( 'http-callapi-test.settings.json' );
 
 const callapi_debug_handler = (nargs)=>{
   return {

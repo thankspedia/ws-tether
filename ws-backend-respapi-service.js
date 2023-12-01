@@ -1,20 +1,20 @@
 
-const express    = require('express');
-const cors       = require( 'cors' );
+import express    from 'express';
+import cors       from  'cors';
 
-const { startService } = require('./service-utils.js');
+import { startService } from service-utils.js';
 
-const { loadContextFactory  } = require( './context-factory-loader.js' );
-const { filenameOfSettings, asyncReadSettings } = require( 'asynchronous-context/settings' );
+import { loadContextFactory  } from './context-factory-loader.js' ;
+import { filenameOfSettings, asyncReadSettings } from 'asynchronous-context/settings' ;
 
-const {
+import {
   create_websocket_upgrader,
   create_multi_path_upgrade_handler,
   on_init_websocket_of_ws_backend,
-} = require( './ws-backend-respapi.js' );
+} from './ws-backend-respapi.js' ;
 
-const { typecast, schema  } = require( 'vanilla-schema-validator' );
-const { typesafe_function } = require( 'runtime-typesafety' );
+import { typecast, schema  } from 'vanilla-schema-validator' ;
+import { typesafe_function } from 'runtime-typesafety' ;
 
 const create_service_factory = ( create_app, ports, handle_upgrade )=>{
   create_app = typesafe_function( create_app, {
@@ -95,7 +95,8 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
     )
   );
 }
-module.exports.create_service_factory = create_service_factory;
+
+export { create_service_factory as create_service_factory };
 
 schema.define`
   t_start_service_for_ws_backend : object(
@@ -145,7 +146,8 @@ const start_service_for_ws_backend = (nargs)=>{
     )
   );
 };
-module.exports.start_service_for_ws_backend = start_service_for_ws_backend;
+
+export { start_service_for_ws_backend as start_service_for_ws_backend };
 
 function default_cors_origins( origin, callback ) {
   console.error( 'WARNING : NO CORS SETTING FILE WAS SPECIFIED. THIS CAUSES ALLOWING FOR ALL DOMAINS.' );
@@ -180,7 +182,7 @@ function loadService( serviceSettings ) {
     })
   );
 }
-module.exports.loadService = loadService;
+export { loadService as loadService };
 
 async function startWsService() {
   const createService =
@@ -192,10 +194,7 @@ async function startWsService() {
 
   startService( createService );
 };
-module.exports.startService = startWsService;
+export { startWsService as startService };
 
-if ( require.main === module ) {
-  startWsService();
-}
 
 

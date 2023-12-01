@@ -1,15 +1,15 @@
 
-const process    = require( 'process' );
-const { filenameOfSettings } = require( 'asynchronous-context/settings' );
-const { schema } = require( 'vanilla-schema-validator' );
-const { typesafe_function } = require( 'runtime-typesafety' );
-const { preventUndefined } = require( 'prevent-undefined' );
-const {  readSettings } = require( 'asynchronous-context/settings' );
+import process    from 'process' ;
+import { filenameOfSettings } from 'asynchronous-context/settings' ;
+import { schema } from 'vanilla-schema-validator' ;
+import { typesafe_function } from 'runtime-typesafety' ;
+import { preventUndefined } from 'prevent-undefined' ;
+import {  readSettings } from 'asynchronous-context/settings' ;
+import { startFileSytemWatchdog } from './fs-watchdog.js' ;
 
-require( './schema' ).init( schema );
-require( 'authentication-context/schema' ).init( schema );
+(await import( './schema' )).init( schema );
+(await import ( 'authentication-context/schema' )).init( schema );
 
-const { startFileSytemWatchdog } = require( './fs-watchdog.js' );
 
 /*
  *   startService()
@@ -97,7 +97,7 @@ function startService( __createService ) {
     restart  : asyncRestartServices,
   };
 }
-module.exports.startService = startService;
+export { startService };
 
 
 /*
@@ -113,7 +113,7 @@ const createLoadServiceAfterReadSettings = (loadService)=>{
   };
   return loadServiceAfterReadSettings;
 };
-module.exports.createLoadServiceAfterReadSettings = createLoadServiceAfterReadSettings;
+export { createLoadServiceAfterReadSettings };
 
 
 /*
@@ -124,6 +124,5 @@ module.exports.createLoadServiceAfterReadSettings = createLoadServiceAfterReadSe
 const validateSettings = (settings) =>{
   return  preventUndefined( settings ,  schema.t_async_context_service_settings() );
 };
-
 
 

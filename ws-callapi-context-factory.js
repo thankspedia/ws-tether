@@ -1,15 +1,15 @@
 
-const { create_callapi            } = require( './callapi.js' );
-const { websocket_callapi_handler } = require( './ws-callapi' );
+import { create_callapi            } from './callapi.js' ;
+import { websocket_callapi_handler } from './ws-callapi' ;
 
-const {
+import {
   await_websocket,
   create_websocket,
-} = require( './ws-utils' );
+} from './ws-utils' ;
 
 function createContext( nargs ) {
   const callapi_handler = websocket_callapi_handler;
   return create_callapi({ ...nargs, callapi_handler  });
 }
-module.exports.createContext = createContext;
+export { createContext as createContext };
 

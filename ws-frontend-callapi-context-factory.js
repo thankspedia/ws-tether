@@ -1,8 +1,8 @@
 
-const { create_callapi                     } = require( './callapi.js' );
-const { websocket_callapi_handler          } = require( './ws-callapi' );
-const { await_websocket, create_websocket, } = require( './ws-utils' );
-const { createContext,                     } = require( './ws-callapi-context-factory.js' );
+import { create_callapi                     } from './callapi.js' ;
+import { websocket_callapi_handler          } from './ws-callapi' ;
+import { await_websocket, create_websocket, } from './ws-utils' ;
+import { createContext,                     } from './ws-callapi-context-factory.js' ;
 
 async function asyncCreateWebsocketClientContext( nargs ) {
   nargs.websocket = create_websocket( nargs.websocket );
@@ -10,6 +10,6 @@ async function asyncCreateWebsocketClientContext( nargs ) {
   await await_websocket( nargs.websocket );
   return { context };
 }
-module.exports.createContext = asyncCreateWebsocketClientContext;
+export { asyncCreateWebsocketClientContext as createContext };
 
 
