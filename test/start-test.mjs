@@ -2,36 +2,35 @@
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
 
-import settings from 'asynchronous-context/settings';
-import env from 'asynchronous-context/env';
+import { createSimpleSemaphore }             from  'asynchronous-context-rpc/simple-semaphore.mjs' ;
+import   assert                              from   'node:assert/strict'  ;
+import { test, describe, it, before, after } from   'node:test'  ;
+import { spawn }                             from   'node:child_process'  ;
+import { WebSocket }                         from   'ws'  ;
 
-settings.filenameOfSettings( './http-callapi-test.settings.json' );
-env.config();
+import { filenameOfSettings } from 'asynchronous-context/settings';
+import { dotenvFromSettings } from 'asynchronous-context/env' ;
+import "./common.mjs";
+import { createContext as createContextCallapi } from 'asynchronous-context-rpc/http-callapi-context-factory.mjs';
+filenameOfSettings('./start-test.settings.json' );
+dotenvFromSettings();
 
-Object.assign( require('util').inspect.defaultOptions, {
-  depth  : null,
-  colors : false,
-  showHidden : false,
-  maxStringLength : Infinity,
-  // compact: false,
-  // breakLength: 1000,
-});
-
-
-const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after }  = require( 'node:test' );
-const { spawn } = require( 'node:child_process' );
 
 const is_remote = true;
 function createContext() {
-  if ( is_remote ) {
-    return require( 'asynchronous-context-rpc/http-callapi-context-factory' ).createContext({
-      http_server_url           : 'http://localhost:2004/api/',
-      http_authentication_token : 'hello_authentication_token',
-    });
-  } else {
-    return require( 'asynchronous-context-rpc/http-middleware-test-context-factory' ).createContext();
-  }
+  return createContextCallapi({
+    http_server_url           : 'http://localhost:2012/api/',
+    http_authentication_token : 'hello_authentication_token',
+  });
+
+//  if ( is_remote ) {
+//    return require( 'asynchronous-context-rpc/http-callapi-context-factory.mjs' ).createContext({
+//      http_server_url           : 'http://localhost:2012/api/',
+//      http_authentication_token : 'hello_authentication_token',
+//    });
+//  } else {
+//    return require( 'asynchronous-context-rpc/http-middleware-test-context-factory' ).createContext();
+//  }
 }
 
 
@@ -62,7 +61,7 @@ describe( 'it as', async ()=>{
   await before( async ()=>{
     console.warn('BEFORE');
     try {
-      service = spawn( 'start-http-middleware-service', {
+      service = spawn( 'start-service', {
         // detached:true,
         shell:false,
         env: Object.assign({},process.env,{})
@@ -130,5 +129,51 @@ describe( 'it as', async ()=>{
       }
     });
   });
+
+  await it( 'as WebSocket no.1' , async()=>{
+    let resolve = createSimpleSemaphore();
+    let reject  = createSimpleSemaphore();
+
+    const ws = new WebSocket( 'ws://localhost:3959/foo' );
+
+    ws.on('error', (...args)=>{
+      console.error('error!', ...args );
+      reject('foo');
+    });
+
+    ws.on('open', function open() {
+      setTimeout(()=>{
+        ws.send( JSON.stringify({
+          command_type : "invoke",
+          command_value : {
+            method_path : [ 'ws_hello_world', ],
+            method_args : [ 1, 2, 3 ],
+          },
+        }));
+      },5000);
+    });
+
+    ws.on( 'message', function message(__data) {
+      const data = JSON.parse( __data.toString() );
+      console.log( 'received a message', data );
+
+      if ( data.message === 'shutdown immediately' ) {
+        console.log( data );
+        console.log( 'okay,sir' );
+        ws.close();
+        resolve( 'okay,sir' );
+      }
+    });
+
+    console.log(
+      await new Promise((__resolve,__reject)=>{
+        resolve.set( __resolve );
+        reject .set( __reject  );
+      })
+    );
+  });
+
+
+
 }).then((e)=>console.log(e,'foo')).catch( (e)=>{console.log(e) });
 

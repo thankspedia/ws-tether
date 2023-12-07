@@ -9,7 +9,7 @@
     "services" : [
       {
         "type" : "http",
-        "context_factory" :"asynchronous-context-rpc/test/start-test-context-factory.js",
+        "context_factory" :"asynchronous-context-rpc/test/start-test-context-factory.mjs",
         "purge_require_cache" : false,
         "static_paths":[],
         "ports": [ 2012 ],
@@ -20,7 +20,7 @@
       },
       {
         "type" : "http",
-        "context_factory" :"asynchronous-context-rpc/test/start-test-context-factory.js",
+        "context_factory" :"asynchronous-context-rpc/test/start-test-context-factory.mjs",
         "purge_require_cache" : false,
         "static_paths":[],
         "ports": [ 2018 ],
@@ -31,7 +31,7 @@
       },
       {
         "type" : "ws",
-        "context_factory" :"asynchronous-context-rpc/test/ws-backend-respapi-test-context-factory.js",
+        "context_factory" :"asynchronous-context-rpc/test/ws-backend-respapi-test-context-factory.mjs",
         "purge_require_cache" : false,
         "static_paths":[],
         "path":  "/foo",
@@ -45,7 +45,7 @@
   },
 
   "--async_context_backend" : {
-    "context_factory" :"./test/http-callapi-test-context-factory.js",
+    "context_factory" :"./test/http-callapi-test-context-factory.mjs",
     "purge_require_cache" : false,
     "static_paths":[],
     "ports": [ 2004 ],

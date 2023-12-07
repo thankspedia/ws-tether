@@ -1,14 +1,14 @@
 
-import env from 'asynchronous-context/env';
+import { filenameOfSettings, asyncReadSettings } from 'asynchronous-context/settings' ;
+import { dotenvFromSettings } from 'asynchronous-context/env';
 
 import express    from 'express';
 import cors       from 'cors' ;
-import { startService  }                         from './service-utils.js';
-import { filenameOfSettings, asyncReadSettings } from 'asynchronous-context/settings' ;
-import { loadContextFactory  }                   from './context-factory-loader.js' ;
-import { create }                                from './http-middleware' ;
+import { startService  }                         from './service-utils.mjs';
+import { loadContextFactory  }                   from './context-factory-loader.mjs' ;
+import { create }                                from './http-middleware.mjs' ;
 
-env.config();
+dotenvFromSettings();
 
 /*
  *   default_cors_origins

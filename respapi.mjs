@@ -1,6 +1,6 @@
 
-const { schema             } = require( 'vanilla-schema-validator' );
-const { typesafe_function, get_typesafe_tags } = require( 'runtime-typesafety' );
+import { schema                               }     from   'vanilla-schema-validator'  ;
+import { typesafe_function, get_typesafe_tags }     from   'runtime-typesafety'  ;
 
 
 /**

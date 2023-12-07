@@ -1,6 +1,6 @@
-const { AsyncContext }      = require( 'asynchronous-context' );
-const { set_typesafe_tags } = require( 'runtime-typesafety' );
-const { middleware, METHOD_POST } = require( 'asynchronous-context-rpc/http-middleware' );
+import { AsyncContext }             from   'asynchronous-context'  ;
+import { set_typesafe_tags }        from   'runtime-typesafety'  ;
+import { METHOD_POST }  from   'asynchronous-context-rpc/http-middleware.mjs'  ;
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
@@ -57,7 +57,7 @@ Hello.defineMethod(
       this.send_ws_message({
         message : 'shutdown immediately',
       });
-    },0500);
+    }, 500 );
     return 'hello world !!';
   },
   METHOD_POST,
@@ -117,5 +117,5 @@ function createContext() {
   return Hello.create();
 }
 
-module.exports.createContext = createContext;
+export { createContext };
 

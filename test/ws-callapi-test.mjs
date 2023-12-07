@@ -1,23 +1,18 @@
 
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require( 'asynchronous-context/settings' ).filenameOfSettings( './ws-callapi-test-context-factory.settings.json' );
-require( 'asynchronous-context/env' ).config();
+import   assert       from   'node:assert/strict'  ;
+import { test, describe, it, before, after }     from   'node:test'  ;
+import { spawn }     from   'node:child_process'  ;
 
-Object.assign( require('util').inspect.defaultOptions, {
-  depth  : null,
-  colors : false,
-  showHidden : false,
-  maxStringLength : Infinity,
-  // compact: false,
-  // breakLength: 1000,
-});
+import { createContext as __createContext }    from   'asynchronous-context-rpc/ws-frontend-callapi-context-factory.mjs'  ;
+import { filenameOfSettings } from 'asynchronous-context/settings';
+import { dotenvFromSettings } from 'asynchronous-context/env' ;
+import "./common.mjs";
 
+filenameOfSettings( './ws-callapi-test-context-factory.settings.json' );
+dotenvFromSettings( );
 
-const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after } = require( 'node:test' );
-const { spawn } = require( 'node:child_process' );
-const { createContext: __createContext } = require( 'asynchronous-context-rpc/ws-frontend-callapi-context-factory' );
 
 async function createContext() {
   return await __createContext({ websocket: 'ws://localhost:3954/foo'});
@@ -70,6 +65,9 @@ describe( async ()=>{
     const p = new Promise( async (resolve,reject)=>{
       const {context} = await createContext();
       const websocket = (await context.websocket() );
+
+      await sleep( 1000 );
+
       const close = ()=>websocket.close();
 
       websocket.on( 'message', ( data )=>{
@@ -85,7 +83,7 @@ describe( async ()=>{
       setTimeout( ()=>{
         reject('timeout')
         close();
-      }, 100 );
+      }, 5000 );
 
       await context.say_hello();
     });

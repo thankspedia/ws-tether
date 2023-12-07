@@ -1,37 +1,28 @@
 
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require( 'asynchronous-context/settings' ).filenameOfSettings( './ws-frontend-respapi-test.settings.json' );
-require('asynchronous-context/env').config();
+import   assert                                 from   'node:assert/strict'  ;
+import { test, describe, it, before, after }    from   'node:test'  ;
+import { spawn }                                from   'node:child_process'  ;
+import { AsyncContext }                         from   'asynchronous-context'  ;
 
+import { create_callapi }                                     from 'asynchronous-context-rpc/callapi.mjs'  ;
+import { websocket_callapi_handler }                          from 'asynchronous-context-rpc/ws-callapi.mjs'  ;
+import { create_websocket, await_websocket, await_sleep }     from 'asynchronous-context-rpc/ws-utils.mjs'  ;
+import { set_typesafe_tags }                                  from 'runtime-typesafety'  ;
+import { filenameOfSettings }                                 from 'asynchronous-context/settings';
+import { dotenvFromSettings }                                 from 'asynchronous-context/env' ;
+import "./common.mjs";
 
-const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after }  = require( 'node:test' );
-const { spawn } = require( 'node:child_process' );
-const { AsyncContext } = require( 'asynchronous-context' );
-const { METHOD_POST  } = require( 'asynchronous-context-rpc' );
-
-const { create_callapi } = require( 'asynchronous-context-rpc/callapi.js' );
-const { websocket_callapi_handler } = require( 'asynchronous-context-rpc/ws-callapi' );
-const { create_websocket, await_websocket, await_sleep } = require( 'asynchronous-context-rpc/ws-utils' );
-const { set_typesafe_tags } = require( 'runtime-typesafety' );
-
-const {
+import {
  t_handle_message,
  t_respapi_message,
- handle_on_message_of_ws_frontend,
  on_init_websocket_of_ws_frontend_respapi,
-} = require( 'asynchronous-context-rpc/ws-frontend-respapi.js' );
+} from  'asynchronous-context-rpc/ws-frontend-respapi.mjs'  ;
 
+filenameOfSettings( './ws-frontend-respapi-test.settings.json' );
+dotenvFromSettings();
 
-Object.assign( require('util').inspect.defaultOptions, {
-  depth  : null,
-  colors : false,
-  showHidden : false,
-  maxStringLength : Infinity,
-  // compact: false,
-  // breakLength: 1000,
-});
 
 const sleep = (t)=>(new Promise((resolve,reject)=>{
   setTimeout(resolve,t);
@@ -121,6 +112,8 @@ describe( async ()=>{
       callapi_handler : websocket_callapi_handler,
       websocket,
     });
+
+    await await_sleep( 1000 );
 
     on_init_websocket_of_ws_frontend_respapi( websocket, context );
     await await_websocket( websocket );

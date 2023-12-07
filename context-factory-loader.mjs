@@ -1,8 +1,10 @@
 
 function purgeRequireCache() {
-  Object.entries( require.cache ).map( ([key,value])=>{
-    delete require.cache[ key ];
-  });
+  // TODO
+  // Object.entries( require.cache ).map( ([key,value])=>{
+  //
+  //   delete require.cache[ key ];
+  // });
 }
 
 export function loadContextFactory( /* the package name of */ path_to_context_factory, purge_require_cache ) {
@@ -19,17 +21,27 @@ export function loadContextFactory( /* the package name of */ path_to_context_fa
       async function() {
         purgeRequireCache();
 
-        // always get fresh, and the latest createContext() function
-        return require( path_to_context_factory ).createContext();
+        try {
+          // always get fresh, and the latest createContext() function
+          return (await import( path_to_context_factory )).createContext();
+        } catch ( e ) {
+          console.error(e);
+          throw e;
+        }
       }
     );
   } else {
     return (
       async function() {
-        // purgeRequireCache();
+        try {
+          // purgeRequireCache();
 
-        // always get fresh, and the latest createContext() function
-        return require( path_to_context_factory ).createContext();
+          // always get fresh, and the latest createContext() function
+          return (await import( path_to_context_factory )).createContext();
+        } catch ( e ) {
+          console.error(e);
+          throw e;
+        }
       }
     );
   }

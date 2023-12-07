@@ -1,5 +1,5 @@
 
-import { respapi } from './respapi' ;
+import { respapi } from './respapi.mjs' ;
 import { schema, trace_validator } from 'vanilla-schema-validator' ;
 
 const t_handle_message = schema.compile`

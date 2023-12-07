@@ -1,21 +1,15 @@
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require('asynchronous-context/settings').filenameOfSettings('http-middleware-test-context-factory.settings.json' );
-require('asynchronous-context/env').config();
+import   assert                                  from   'node:assert/strict'  ;
+import { test, describe, it, before, after }     from   'node:test'  ;
+import { spawn }                                 from   'node:child_process'  ;
 
+import { filenameOfSettings } from 'asynchronous-context/settings';
+import { dotenvFromSettings } from 'asynchronous-context/env' ;
+import "./common.mjs";
 
-Object.assign( require('util').inspect.defaultOptions, {
-  depth  : null,
-  colors : false,
-  showHidden : false,
-  maxStringLength : Infinity,
-  // compact: false,
-  // breakLength: 1000,
-});
-
-const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after }  = require( 'node:test' );
-const { spawn } = require( 'node:child_process' );
+filenameOfSettings('http-middleware-test-context-factory.settings.json' );
+dotenvFromSettings();
 
 let testService = null;
 

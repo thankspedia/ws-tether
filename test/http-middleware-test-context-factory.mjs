@@ -1,11 +1,6 @@
-import { AsyncContext }      from  'asynchronous-context' ;
-import { set_typesafe_tags } from  'runtime-typesafety' ;
-import { middleware, METHOD_POST } from  'asynchronous-context-rpc/http-middleware' ;
-
-/*
- * duplicated on
- * (Fri, 16 Jun 2023 11:35:26 +0900)
- */
+import { AsyncContext }          from 'asynchronous-context' ;
+import { set_typesafe_tags }     from 'runtime-typesafety' ;
+import {  METHOD_POST }          from 'asynchronous-context-rpc/http-middleware.mjs' ;
 
 function p(o) {
   return set_typesafe_tags( o, METHOD_POST );
@@ -102,5 +97,5 @@ function createContext() {
   return Hello.create();
 }
 
-module.exports.createContext = createContext;
+export { createContext };
 

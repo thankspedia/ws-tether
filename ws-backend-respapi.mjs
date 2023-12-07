@@ -1,14 +1,9 @@
 
 import { WebSocketServer } from 'ws' ;
 import { parse } from 'url';
-
-import {
-  respapi,
-  t_respapi_message,
-} from './respapi.js' ;
-
 import { trace_validator } from 'vanilla-schema-validator' ;
-import { createContext   } from './ws-callapi-context-factory' ;
+import { respapi, t_respapi_message } from './respapi.mjs' ;
+import { createContext   } from './ws-callapi-context-factory.mjs' ;
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 

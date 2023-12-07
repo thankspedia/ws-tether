@@ -2,16 +2,16 @@
 import express    from 'express';
 import cors       from  'cors';
 
-import { startService } from service-utils.js';
+import { startService } from './service-utils.mjs';
 
-import { loadContextFactory  } from './context-factory-loader.js' ;
+import { loadContextFactory  } from './context-factory-loader.mjs' ;
 import { filenameOfSettings, asyncReadSettings } from 'asynchronous-context/settings' ;
 
 import {
   create_websocket_upgrader,
   create_multi_path_upgrade_handler,
   on_init_websocket_of_ws_backend,
-} from './ws-backend-respapi.js' ;
+} from './ws-backend-respapi.mjs' ;
 
 import { typecast, schema  } from 'vanilla-schema-validator' ;
 import { typesafe_function } from 'runtime-typesafety' ;

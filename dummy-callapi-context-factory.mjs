@@ -1,6 +1,6 @@
 
-import  { create_callapi } from './callapi.js' ;
-import  { dummy_callapi_handler } from './dummy-callapi' ;
+import  { create_callapi } from './callapi.mjs' ;
+import  { dummy_callapi_handler } from './dummy-callapi.mjs' ;
 
 function createDummyContext( nargs ) {
   const callapi_handler = dummy_callapi_handler;

@@ -1,23 +1,18 @@
 // require( 'dotenv' ).config();
 // MODIFIED (Wed, 27 Sep 2023 13:28:23 +0900)
-require('asynchronous-context/settings').filenameOfSettings( 'ws-backend-respapi-test-context-factory.settings.json' );
-require('asynchronous-context/env').config();
 
-const { createSimpleSemaphore } = require('asynchronous-context-rpc/simple-semaphore');
+import   assert      from   'node:assert/strict'  ;
+import { test, describe, it, before, after }      from   'node:test'  ;
+import { spawn }     from   'node:child_process'  ;
+import { WebSocket }     from   'ws'  ;
 
-Object.assign( require('util').inspect.defaultOptions, {
-  depth  : null,
-  colors : false,
-  showHidden : false,
-  maxStringLength : Infinity,
-  // compact: false,
-  // breakLength: 1000,
-});
+import { createSimpleSemaphore }     from  'asynchronous-context-rpc/simple-semaphore.mjs' ;
+import { filenameOfSettings } from 'asynchronous-context/settings';
+import { dotenvFromSettings } from 'asynchronous-context/env' ;
+import "./common.mjs" ;
 
-const assert = require( 'node:assert/strict' );
-const { test, describe, it, before, after }  = require( 'node:test' );
-const { spawn } = require( 'node:child_process' );
-const { WebSocket } = require( 'ws' );
+filenameOfSettings( 'ws-backend-respapi-test-context-factory.settings.json' );
+dotenvFromSettings();
 
 let testService = null;
 

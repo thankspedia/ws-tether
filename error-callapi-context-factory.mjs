@@ -1,6 +1,6 @@
 
-import  { create_callapi                } from './callapi.js' ;
-import  { create_error_callapi_handler  } from './error-callapi' ;
+import  { create_callapi                } from './callapi.mjs' ;
+import  { create_error_callapi_handler  } from './error-callapi.mjs' ;
 
 function createErrorContext( nargs ) {
   if ( ! ( 'error_message' in  nargs ) ) {

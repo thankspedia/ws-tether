@@ -1,6 +1,6 @@
 
-import { create_callapi        } from './callapi.js' ;
-import { http_callapi_handler  } from './http-callapi' ;
+import { create_callapi        } from './callapi.mjs' ;
+import { http_callapi_handler  } from './http-callapi.mjs' ;
 
 export function createContext( nargs ) {
   const callapi_handler = http_callapi_handler;

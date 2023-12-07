@@ -1,11 +1,11 @@
 
-import { create_callapi            } from './callapi.js' ;
-import { websocket_callapi_handler } from './ws-callapi' ;
+import { create_callapi            } from './callapi.mjs' ;
+import { websocket_callapi_handler } from './ws-callapi.mjs' ;
 
 import {
   await_websocket,
   create_websocket,
-} from './ws-utils' ;
+} from './ws-utils.mjs' ;
 
 function createContext( nargs ) {
   const callapi_handler = websocket_callapi_handler;

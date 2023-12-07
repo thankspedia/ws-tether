@@ -1,7 +1,8 @@
 import express         from 'express' ;
 import bodyParser      from 'body-parser';
 import url             from 'url';
-import { respapi }     from 'asynchronous-context-rpc/respapi';
+import { inspect }     from 'node:util';
+import { respapi }     from 'asynchronous-context-rpc/respapi.mjs';
 
 export const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 export const METHOD_GET      = 'GET';
@@ -71,7 +72,6 @@ const filterErrorToJSON = (()=>{
   }
 
   const inspect_custom_symbol = Symbol.for('nodejs.util.inspect.custom');
-  const { inspect } = require( 'node:util' );
 
   function __filterErrorToJSON(o, depth ) {
     if ( o instanceof Error ) {
@@ -597,6 +597,6 @@ function create_middleware( contextFactory ) {
   return router;
 }
 
-export {create_middleware as create };
-export {create_middleware  };
+export { create_middleware as create };
+export { create_middleware  };
 

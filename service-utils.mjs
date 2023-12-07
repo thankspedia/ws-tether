@@ -1,14 +1,15 @@
 
 import process    from 'process' ;
+import { readSettings } from 'asynchronous-context/settings' ;
 import { filenameOfSettings } from 'asynchronous-context/settings' ;
+
 import { schema } from 'vanilla-schema-validator' ;
 import { typesafe_function } from 'runtime-typesafety' ;
 import { preventUndefined } from 'prevent-undefined' ;
-import {  readSettings } from 'asynchronous-context/settings' ;
-import { startFileSytemWatchdog } from './fs-watchdog.js' ;
+import { startFileSytemWatchdog } from './fs-watchdog.mjs' ;
 
-(await import( './schema' )).init( schema );
-(await import ( 'authentication-context/schema' )).init( schema );
+// (await import( './schema.mjs' )).init( schema );
+// (await import ( 'authentication-context/schema.js' )).init( schema );
 
 
 /*
