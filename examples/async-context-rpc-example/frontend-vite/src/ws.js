@@ -1,21 +1,24 @@
 
-// import  { AsyncContext } from 'asynchronous-context' ;
-import { createContext  } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
+import { AsyncContext   } from 'asynchronous-context' ;
+import { createContext  } from 'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
 import { create_websocket, await_websocket, await_sleep } from 'asynchronous-context-rpc/ws-utils' ;
 import { set_typesafe_tags } from 'runtime-typesafety' ;
 
-const {
+import  {
  t_handle_message,
  t_respapi_message,
- handle_on_message_of_ws_frontend,
+ handle_on_message_of_ws_frontend_respapi,
  on_init_websocket_of_ws_frontend_respapi,
-} = require( 'asynchronous-context-rpc/ws-frontend-respapi.mjs' );
+} from 'asynchronous-context-rpc/ws-frontend-respapi.mjs' ;
+
+// class AsyncContext {
+// }
 
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
 }
 
-function createTimer( proc ) {
+function createTimer( proc, millisecond ) {
   function set(){
     return setTimeout(()=>{
       try {
@@ -52,8 +55,9 @@ function createTimer( proc ) {
   };
 }
 
-export class Hello  {
+export class Hello  extends AsyncContext {
   constructor(event_handlers){
+    super();
     this.event_handlers = event_handlers;
     this.flag_succeded = false;
   }
@@ -61,10 +65,10 @@ export class Hello  {
 
 Hello.prototype.fine_thank_you = p(
   async function fine_thank_you(...args) {
-    alert();
+    alert('fine_thank_you');
     console.log( 'hooray!' , ...args );
     this.flag_succeded = true;
-    this.websocket.close();
+    // this.websocket.close();
     // test_state.__service.shutdown();
     // await this.backend.how_are_you(...args);
   },
@@ -91,7 +95,7 @@ export class WS {
   }
   backend = null;
   constructor() {
-    this.timer = createTimer( this.__check.bind( this ) );
+    this.timer = createTimer( this.__check.bind( this ), 3000 );
   }
 
   start() {
@@ -101,16 +105,24 @@ export class WS {
     this.timer.stop();
   }
   async proc(){
-    console.log( 'hello(proc)' , this.__time );
-    console.log( this.backend );
+    console.log( 'proc 0' , '__time', this.__time, '__backend', this.backend );
     if ( this.backend === null ) {
       console.log( 'proc() initialize' , this.__time );
-      this.websocket = create_websocket( 'ws://schizostylis.local:3632/foo' );
-      const {context} =  await createContext({ websocket:this.websocket });
-      this.backend = context;
+      const websocket = create_websocket( 'ws://schizostylis.local:3632/foo' );
+      this.websocket = websocket;
+      const {context:backendContext} =  await createContext({ websocket:this.websocket });
+      console.log( 'proc 2' , backendContext );
+      this.backend = backendContext;
 
-      on_init_websocket_of_ws_frontend_respapi( this.websocket, context );
-      await await_websocket( this.websocket );
+      const frontendContext = Hello.create();
+      console.log( 'proc 3' , frontendContext );
+      frontendContext.backend = backendContext;
+      frontendContext.websocket = websocket;
+      this.frontend = frontendContext;
+
+      on_init_websocket_of_ws_frontend_respapi( websocket, frontendContext );
+      await await_websocket( websocket );
+
 
     }
   }

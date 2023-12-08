@@ -1,7 +1,7 @@
 import express         from 'express' ;
 import bodyParser      from 'body-parser';
 import url             from 'url';
-import { inspect }     from 'node:util';
+import { inspect }     from 'util';
 import { respapi }     from 'asynchronous-context-rpc/respapi.mjs';
 
 export const AUTO_CONNECTION = '__AUTO_CONNECTION__';
@@ -91,7 +91,9 @@ const filterErrorToJSON = (()=>{
     } else if ( o === undefined ) {
       return undefined;
     } else if ( (typeof o === 'object') && (inspect_custom_symbol in o ) && ( typeof o[inspect_custom_symbol] === 'function' ) ) {
-      return o[inspect_custom_symbol]( depth, {}, inspect  );
+      // return o[inspect_custom_symbol]( depth, {}, inspect  );
+      console.warn( 'a reference to `util` was ignored' );
+      return null;
     } else if ( typeof o === 'object' ) {
       return Object.assign( Array.isArray( o ) ? [] : {}, ... Object.keys(o).map(k=>({[k]:__filterErrorToJSON(o[k], depth+1)})));
     } else {

@@ -1,7 +1,11 @@
 
 
-import UtilWebSocket from "ws";
+// import UtilWebSocket from "ws";
+
+// const UtilWebSocket = ( typeof WebSocket !== 'undefined' ? WebSocket  :  await import( "ws" ) )
+
 // const UtilWebSocket = await (async()=> typeof WebSocket !== 'undefined' ? WebSocket : await import('ws') )();
+import { WebSocket } from "asynchronous-context-rpc/ws";
 
 const WEBSOCKET = {
   CONNECTING : 0,  // Socket has been created. The connection is not yet open.
@@ -38,7 +42,7 @@ function await_websocket( websocket ) {
   let flag = false;
   return new Promise( (resolve,reject)=>{
     switch ( websocket.readyState ) {
-      case WEBSOCKET.CONNECTING :
+      case WebSocket.CONNECTING :
         // websocket.on
         websocket.addEventListener( 'open', ()=>{
           if ( ! flag ) {
@@ -47,11 +51,11 @@ function await_websocket( websocket ) {
           }
         });
         break;
-      case WEBSOCKET.OPEN :
+      case WebSocket.OPEN :
         resolve();
         break;
-      case WEBSOCKET.CLOSING :
-      case WEBSOCKET.CLOSED :
+      case WebSocket.CLOSING :
+      case WebSocket.CLOSED :
       default:
         reject('the specified WebSocket is already closed');
         break;
@@ -63,7 +67,7 @@ export { await_websocket as await_websocket };
 
 function create_websocket( ws_spec ) {
   if ( typeof ws_spec === 'string' ) {
-    return new UtilWebSocket( ws_spec );
+    return new WebSocket( ws_spec );
   } else {
     return ws_spec;
   }

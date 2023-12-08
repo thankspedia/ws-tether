@@ -1,12 +1,47 @@
-import { useState } from 'react'
+import React from "react";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import {WS} from './ws.js';
+// import {hello} from './hello.mjs';
 
-import { createContext as __createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
+import { createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
+
+// alert( createContext );
+// const context = await createContext({ websocket: new WebSocket( 'ws://schizostylis.local:3632/foo' ) })
+// alert( context );
+// context.hello();
+//
+// alert( hello);
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = React.useState(0)
+
+  const ref = React.useRef( null );
+  async function handleClick() {
+    try {
+      const ws =  ref.current;
+      alert('before');
+      alert( 'how are you' + ':' +  await ws.backend.how_are_you(1,2,3) );
+      alert('after');
+    } catch (e){
+      console.error(e);
+      alert('error');
+      alert(e);
+    }
+  }
+
+  React.useEffect(()=>{
+    if ( ref.current === null ) {
+      ref.current = new WS();
+    }
+
+    ref.current.start();
+    return ()=>{
+      ref.current.stop();
+      ref.current = null;
+    };
+  });
 
   return (
     <>
@@ -23,6 +58,7 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
+        <button onClick={ handleClick }>Start</button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>

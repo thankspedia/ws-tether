@@ -6,7 +6,7 @@ const t_handle_message = schema.compile`
   object(
     context   : object(),
     websocket : object(),
-    data      : object(),
+    message   : object(),
   ),
 `();
 export { t_handle_message as t_handle_message };
@@ -24,6 +24,7 @@ export { t_respapi_message as t_respapi_message };
 
 
 async function handle_on_message_of_ws_frontend_respapi( nargs ) {
+  console.log( 'handle_on_message_of_ws_frontend_respapi', nargs );
   {
     const info = trace_validator( t_handle_message, nargs );
     if ( ! info.value ) {
@@ -34,13 +35,14 @@ async function handle_on_message_of_ws_frontend_respapi( nargs ) {
   const {
     context,
     websocket,
-    data,
-
+    message,
   } = nargs;
 
-  const message = JSON.parse( data.toString() );
+  console.log( 'handle_on_message_of_ws_frontend_respapi', nargs );
+
+  const message_data = JSON.parse( message?.data?.toString() ?? '{}' );
   {
-    const info = trace_validator( t_respapi_message, message );
+    const info = trace_validator( t_respapi_message, message_data );
     if ( ! info.value ) {
       throw new Error( 'invalid message' + info.report() );
     }
@@ -52,7 +54,7 @@ async function handle_on_message_of_ws_frontend_respapi( nargs ) {
       context,
 
       /* callapi_method_path */
-      message.command_value.method_path,
+      message_data.command_value.method_path,
 
       /* http-method as TAGS */
       'WEBSOCKET_METHOD',
@@ -67,12 +69,12 @@ async function handle_on_message_of_ws_frontend_respapi( nargs ) {
          * Invoking the Resolved Method
          */
         const target_method      = resolved_callapi_method.value
-        const target_method_args = message.command_value.method_args;
+        const target_method_args = message_data.command_value.method_args;
         return await (context.executeTransaction( target_method, ... target_method_args ));
       },
     );
 
-  console.log( 'received No.1: %s', data );
+  console.log( 'received No.1: %s', message?.data );
   console.log( 'respapi_result', respapi_result );
   // console.log( 'context.hello_world', await context.hello_world() );
 
@@ -90,14 +92,14 @@ export { handle_on_message_of_ws_frontend_respapi as handle_on_message_of_ws_fro
  */
 
 function on_init_websocket_of_ws_frontend_respapi( websocket, context ) {
-  websocket.on( 'message', (data)=>{
+  websocket.addEventListener( 'message', (message)=>{
     return handle_on_message_of_ws_frontend_respapi({
       context,
       websocket,
-      data,
+      message,
     });
   });
-  websocket.on( 'error', (...args)=>{
+  websocket.addEventListener( 'error', (...args)=>{
     console.error( ...args );
   });
 }
