@@ -1,7 +1,6 @@
 import express         from 'express' ;
 import bodyParser      from 'body-parser';
 import url             from 'url';
-import { inspect }     from 'util';
 import { respapi }     from 'asynchronous-context-rpc/respapi.mjs';
 
 export const AUTO_CONNECTION = '__AUTO_CONNECTION__';

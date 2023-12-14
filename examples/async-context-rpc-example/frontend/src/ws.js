@@ -59,9 +59,23 @@ export class Hello  {
   }
 }
 
+Hello.prototype.poke = p(
+  async function poke(nargs,foo) {
+    alert( nargs.message );
+    console.log( 'hooray!' , nargs ,foo);
+    // this.websocket.close();
+    // test_state.__service.shutdown();
+    // await this.backend.how_are_you(...args);
+  },
+  'WEBSOCKET_METHOD',
+  {
+    unprotected_output : true,
+  }
+);
+
 Hello.prototype.fine_thank_you = p(
   async function fine_thank_you(...args) {
-    alert();
+    alert('fine_thank_you');
     console.log( 'hooray!' , ...args );
     this.flag_succeded = true;
     this.websocket.close();

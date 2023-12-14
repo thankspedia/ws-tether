@@ -3,7 +3,7 @@ import { WebSocketServer } from 'ws' ;
 import { parse } from 'url';
 import { trace_validator } from 'vanilla-schema-validator' ;
 import { respapi, t_respapi_message } from './respapi.mjs' ;
-import { createContext   } from './ws-callapi-context-factory.mjs' ;
+import { createContext  } from './ws-backend-callapi-context-factory.mjs' ;
 
 const AUTO_CONNECTION = '__AUTO_CONNECTION__';
 
@@ -76,25 +76,61 @@ const get_authentication_token = (req)=>{
   }
 };
 
-async function handle_on_init_of_ws_backend( nargs ) {
+async function handle_event_of_ws_backend( nargs ) {
   const {
-    event_handlers  = {},
-    context         = ((name)=>{throw new Error(`${name} is not defined`)})('context'),
-    websocket       = ((name)=>{throw new Error(`${name} is not defined`)})('websocket'),
-    req             = null,
+    event_name         = ((name)=>{throw new Error(`${name} is not defined`)})('event_name'),
+    event_handler_name = ((name)=>{throw new Error(`${name} is not defined`)})('event_handler_name'),
+    event_handlers     = {},
+    context            = ((name)=>{throw new Error(`${name} is not defined`)})('context'),
+    websocket          = ((name)=>{throw new Error(`${name} is not defined`)})('websocket'),
+    req                = null,
   } = nargs;
 
-  if ( 'on_init' in event_handlers ) {
+  console.log('LOG','handle_event_of_ws_backend');
+
+  /*
+   * Call the specified event handler on the context object.
+   */
+  const respapi_result  =
+    await respapi(
+      /* callapi_target */
+      context,
+
+      /* callapi_method_path */
+      // message.command_value.method_path,
+      [event_handler_name],
+
+      /* http-method as TAGS */
+      'WEBSOCKET_EVENT_HANDLER',
+
+      /* on_execution */
+      async ( resolved_callapi_method )=>{
+        /*
+         * Invoking the Resolved Method
+         */
+        const target_method      = resolved_callapi_method.value;
+        const target_method_args = [{websocket,event_name}]; // message.command_value.method_args;
+        return await (context.executeTransaction( target_method, ... target_method_args ));
+      },
+    );
+
+  console.log( 'handle_event_of_ws_backend : %s', respapi_result );
+
+  /*
+   * Call the specified event handler on the event handler object.
+   * Note that this mechanism is currently not used.
+   */
+  if ( event_handler_name in event_handlers ) {
     try {
-      event_handlers.on_init();
+      event_handlers[event_handler_name]();
     } catch( e ){
-      console.error('WARNING on_init handler threw an error. ignored. ', e );
+      console.error( `WARNING ${event_handler_name} threw an error. ignored. `, e );
     }
   }
 };
 
 
-async function handle_on_message_of_ws_backend( nargs ) {
+async function handle_message_of_ws_backend( nargs ) {
   const {
     event_handlers  = {},
     context         = ((name)=>{throw new Error('${name} is not defined')})('context'),
@@ -110,18 +146,25 @@ async function handle_on_message_of_ws_backend( nargs ) {
     throw new Error( 'invalid message' + info.report() );
   }
 
-  context.send_ws_message = async function( value ) {
-    websocket.send( JSON.stringify( value ) );
-  };
-
   /*
-   * This line is tested by `ws-backend-respapi-test.js`
-   * See ws-frontend-respapi-test-context-factory.js
-   * (Fri, 16 Jun 2023 14:09:54 +0900)
+   * The followign code migrated to `on_init_websocket_of_ws_backend`.
    */
-  context.frontend = createContext({
-    websocket,
-  });
+
+  // context.send_ws_message = async function( value ) {
+  //   websocket.send( JSON.stringify( value ) );
+  // };
+
+  // /*
+  //  * This line is tested by `ws-backend-respapi-test.js`
+  //  * See ws-frontend-respapi-test-context-factory.js
+  //  * (Fri, 16 Jun 2023 14:09:54 +0900)
+  //  */
+  // context.frontend = createContext({
+  //   websocket,
+  // });
+
+
+
 
   // COPIED FROM http-middleware
   /*
@@ -190,6 +233,10 @@ async function handle_on_message_of_ws_backend( nargs ) {
   return context
 }
 
+/*
+ * This function is not used anymore.
+ * (Thu, 14 Dec 2023 19:17:19 +0900)
+ */
 async function handle_on_error_of_ws_backend( nargs ) {
   const {
     event_handlers  = {},
@@ -198,8 +245,6 @@ async function handle_on_error_of_ws_backend( nargs ) {
     // req             = null,
     // data            = ((name)=>{throw new Error('${name} is not defined')})('data'),
   } = nargs;
-
-  console.error(...args);
 
   if ( 'on_error' in event_handlers ) {
     try {
@@ -220,9 +265,51 @@ async function on_init_websocket_of_ws_backend( nargs ) {
 
   const context = await create_context();
 
-  websocket.on( 'error', ()=>(
-    handle_on_error_of_ws_backend(
+  console.log( "LOG" , "on_init_websocket_of_ws_backend" );
+
+  /*
+   * Initialize the backend context object.
+   *   - Set an accessor to the websocket object to the backend context object.
+   *   - Set the websocket object on the backend context object.
+   *   - Create a frontend context object and set it to the backend context object.
+   *
+   * This part migrated from the following method.
+   */
+  context.websocket = websocket;
+  context.send_ws_message = async function( value ) {
+    websocket.send( JSON.stringify( value ) );
+  };
+  context.frontend = createContext({
+    websocket,
+  });
+  console.log( 'context.frontend' , context.frontend );
+
+  /*
+   * The frontend context object above was tested by `ws-backend-respapi-test.js`
+   * See test/ws-frontend-respapi-test-context-factory.mjs
+   * (Fri, 16 Jun 2023 14:09:54 +0900)
+   */
+
+
+  // websocket.on( 'open', async (data)=>(
+    await handle_event_of_ws_backend(
       {
+        event_name         : 'open',
+        event_handler_name : 'on_open',
+        event_handlers  ,
+        context         ,
+        websocket       ,
+        req             ,
+        // data            ,
+      }
+    )
+  // ));
+
+  websocket.on( 'close', async (data)=>(
+    handle_event_of_ws_backend(
+      {
+        event_name         : 'close',
+        event_handler_name : 'on_close',
         event_handlers  ,
         context         ,
         websocket       ,
@@ -232,8 +319,22 @@ async function on_init_websocket_of_ws_backend( nargs ) {
     )
   ));
 
-  websocket.on( 'message', async (data)=>(
-    handle_on_message_of_ws_backend(
+  websocket.on( 'error', async ()=>(
+    handle_event_of_ws_backend(
+      {
+        event_name         : 'error',
+        event_handler_name : 'on_error',
+        event_handlers  ,
+        context         ,
+        websocket       ,
+        req             ,
+        // data            ,
+      }
+    )
+  ));
+
+  websocket.on( 'message', (data)=>(
+    handle_message_of_ws_backend(
       {
         event_handlers  ,
         context         ,
@@ -244,15 +345,6 @@ async function on_init_websocket_of_ws_backend( nargs ) {
     )
   ));
 
-  handle_on_init_of_ws_backend(
-    {
-      event_handlers  ,
-      context         ,
-      websocket       ,
-      req             ,
-      // data            ,
-    }
-  )
 }
 
 export { on_init_websocket_of_ws_backend as on_init_websocket_of_ws_backend };

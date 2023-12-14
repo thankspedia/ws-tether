@@ -2,6 +2,9 @@ import { AsyncContext }           from 'asynchronous-context' ;
 import { set_typesafe_tags }      from 'runtime-typesafety' ;
 import {  METHOD_POST }           from 'asynchronous-context-rpc/http-middleware' ;
 
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
+
 function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
 }
@@ -43,9 +46,61 @@ Hello.defineMethod(
 );
 
 
+const state = {
+  contexts : [],
+}
+
+Hello.defineMethod(
+  async function on_open(nargs) {
+    const {websocket,event_name} = nargs;
+    this.__websocket = websocket;
+    state.contexts.push( this );
+
+    console.log('on_open', { event_name, state } );
+  },
+  'WEBSOCKET_METHOD',
+  'WEBSOCKET_EVENT_HANDLER',
+  {
+    unprotected_input : true,
+    unprotected_output : true,
+  }
+);
+
+Hello.defineMethod(
+  async function on_close(nargs) {
+    const {websocket,event_name} = nargs;
+    state.contexts.filter(e=> e!== this );
+    console.log( { event_name, state } );
+  },
+  'WEBSOCKET_METHOD',
+  'WEBSOCKET_EVENT_HANDLER',
+  {
+    unprotected_input : true,
+    unprotected_output : true,
+  }
+);
+
+
+
 function createContext() {
   return Hello.create();
 }
+
+(async()=>{
+  const rl = readline.createInterface({ input, output });
+  for(;;) {
+    const answer = await rl.question('Input a message or "quit".');
+    if ( answer.trim().toLowerCase() === 'quit' ) {
+      return;
+    }
+
+    state.contexts.map( (context)=>{
+      console.log( 'context.frontend', context.frontend );
+      /*await*/ context.frontend.poke( {message: answer, info:'foo'}, 'foo' );
+    });
+
+  }
+})();
 
 export { createContext };
 

@@ -78,6 +78,18 @@ Hello.prototype.fine_thank_you = p(
   }
 );
 
+
+Hello.prototype.poke = p(
+  async function poke(nargs,info) {
+    console.log( 'poke!' , nargs );
+    alert(nargs.message);
+  },
+  'WEBSOCKET_METHOD',
+  {
+    unprotected_output : true,
+  }
+);
+
 Hello.prototype.start = p(
   async function start() {
     await this.backend.how_are_you(1,2,3);
