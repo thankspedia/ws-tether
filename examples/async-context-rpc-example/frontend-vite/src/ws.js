@@ -39,6 +39,7 @@ function createTimer( proc ) {
   let __running = false;
   let __handle =null;
   return {
+    id : Math.trunc( Math.random() * 65536),
     get running() {
       return __running;
     },
@@ -104,12 +105,13 @@ Hello.prototype.start = p(
 );
 
 export class WS extends EventTarget {
-  __time = new Date();
+  id  = Math.trunc( Math.random() * 65536 ) ;
 
   frontendContext = null;
   backendContext = null;
   interval = null;
   websocket = null;
+  initialized = false;
 
   constructor( context = (()=>{throw new Error()})(), interval = 3000 ) {
     super();
@@ -117,45 +119,74 @@ export class WS extends EventTarget {
     this.timer = createTimer( this.proc.bind( this ) );
     this.interval = interval;
   }
+
   __on_online = function () {
-    console.log( 'on_online' );
+    console.log( 'on_online', this.id );
     this.start();
   }.bind(this);
 
-  __on_offline = function (){
-    console.log( 'on_offline' );
+  __on_offline = function () {
+    console.log( 'on_offline', this.id );
     this.stop();
   }.bind(this);
 
-  start() {
-    if ( ! this.timer.running ) {
-      if ( typeof window !== 'undefined' ) {
-        window.addEventListener( 'online', this.__on_online );
-        window.addEventListener( 'offline', this.__on_offline );
+  initialize() {
+    if ( ! this.initialized ) {
+      this.initialized = true;
 
+      if ( typeof window !== 'undefined' ) {
+        window.removeEventListener( 'online',  this.__on_online );
+        window.removeEventListener( 'offline', this.__on_offline );
+        window.addEventListener( 'online',  this.__on_online );
+        window.addEventListener( 'offline', this.__on_offline );
+      }
+
+      if ( typeof navigator !== 'undefined' ) {
         if ( navigator.onLine ) {
-          this.timer.start( this.interval );
+          this.start();
         }
       } else {
-        this.timer.start( this.interval );
+        this.start();
       }
     }
   }
-  stop(){
+
+  finalize() {
+    if ( typeof window !== 'undefined' ) {
+      window.removeEventListener( 'online',  this.__on_online );
+      window.removeEventListener( 'offline', this.__on_offline );
+    }
+
+    if ( typeof navigator !== 'undefined' ) {
+      this.stop();
+    } else {
+      this.stop();
+    }
+    this.initialized = false;
+  }
+
+  start() {
+    if ( ! this.timer.running ) {
+      this.timer.start( this.interval );
+    }
+  }
+
+  stop() {
     if ( this.timer.running ) {
       this.timer.stop();
-      if ( this.websocket !== null ) {
-        this.websocket.close();
-      }
-      this.websocket = null;
-      this.backendContext  = null;
     }
+    if ( this.websocket !== null ) {
+      this.websocket.close();
+    }
+    this.websocket = null;
+    this.backendContext  = null;
   }
 
   async proc(){
-    console.log( 'proc 0' , '__time', this.__time, '__backend', this.backendContext );
+    console.log( 'proc 0' , 'id ', this.id, 'timer.id' , this?.timer?.id ?? 'null' ,  '__backend', this.backendContext );
+
     if ( this.websocket === null ) {
-      console.log( 'proc() initialize' , this.__time );
+      console.log( 'proc() initialize' , this.id );
 
       const websocket = create_websocket( 'ws://schizostylis.local:3632/foo' );
 

@@ -17,7 +17,7 @@ import { createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-con
 function App() {
   const [count, setCount] = React.useState(0)
 
-  const ref = React.useRef( null );
+  const ref = React.useRef( new WS( Hello.create() ) );
   async function handleClick() {
     try {
       alert('before');
@@ -31,21 +31,11 @@ function App() {
   }
 
   React.useEffect(()=>{
-    if ( ref.current === null ) {
-      ref.current = new WS( Hello.create() );
-    }
-    ref.current.addEventListener( 'connect', ()=>{
-      console.log( 'App', 'connected!' );
-    });
-    ref.current.addEventListener( 'disconnect', ()=>{
-      console.log( 'App', 'disconnected!' );
-    });
-
-    ref.current.start();
-
+    console.log( '***** MOUNTED ******', ref.current.id );
+    ref.current.initialize();
     return ()=>{
-      ref.current.stop();
-      ref.current = null;
+      console.log( '***** UMOUNTED ******', ref.current.id );
+      ref.current.finalize();
     };
   });
 
