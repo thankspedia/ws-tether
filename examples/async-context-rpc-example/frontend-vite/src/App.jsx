@@ -2,7 +2,7 @@ import React from "react";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import {WS} from './ws.js';
+import {Hello,WS} from './ws.js';
 // import {hello} from './hello.mjs';
 
 import { createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
@@ -20,9 +20,8 @@ function App() {
   const ref = React.useRef( null );
   async function handleClick() {
     try {
-      const ws =  ref.current;
       alert('before');
-      alert( 'how are you' + ':' +  await ws.backend.how_are_you(1,2,3) );
+      alert( 'how are you' + ':' +  await ref.current.backendContext.how_are_you(1,2,3) );
       alert('after');
     } catch (e){
       console.error(e);
@@ -33,10 +32,17 @@ function App() {
 
   React.useEffect(()=>{
     if ( ref.current === null ) {
-      ref.current = new WS();
+      ref.current = new WS( Hello.create() );
     }
+    ref.current.addEventListener( 'connect', ()=>{
+      console.log( 'App', 'connected!' );
+    });
+    ref.current.addEventListener( 'disconnect', ()=>{
+      console.log( 'App', 'disconnected!' );
+    });
 
     ref.current.start();
+
     return ()=>{
       ref.current.stop();
       ref.current = null;

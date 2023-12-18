@@ -52,11 +52,12 @@ const state = {
 
 Hello.defineMethod(
   async function on_open(nargs) {
+    console.log( `Event Handler 'Hello.on_open' was called` );
     const {websocket,event_name} = nargs;
     this.__websocket = websocket;
     state.contexts.push( this );
 
-    console.log('on_open', { event_name, state } );
+    console.log('Hello.on_open Event Handler', { 'self':this, event_name, state } );
   },
   'WEBSOCKET_METHOD',
   'WEBSOCKET_EVENT_HANDLER',
@@ -68,9 +69,10 @@ Hello.defineMethod(
 
 Hello.defineMethod(
   async function on_close(nargs) {
-    const {websocket,event_name} = nargs;
-    state.contexts.filter(e=> e!== this );
-    console.log( { event_name, state } );
+    console.log( `Event Handler 'Hello.on_close' was called` );
+    const { websocket, event_name } = nargs;
+    state.contexts = state.contexts.filter(e=> e !== this );
+    console.log( 'Hello.on_close Event Handler', { 'self':this, event_name, state } );
   },
   'WEBSOCKET_METHOD',
   'WEBSOCKET_EVENT_HANDLER',
@@ -86,21 +88,26 @@ function createContext() {
   return Hello.create();
 }
 
-(async()=>{
-  const rl = readline.createInterface({ input, output });
-  for(;;) {
-    const answer = await rl.question('Input a message or "quit".');
-    if ( answer.trim().toLowerCase() === 'quit' ) {
-      return;
+let flg_readline_created = false;
+
+if ( ! flg_readline_created ) {
+  flg_readline_created = true;
+  (async()=>{
+    const rl = readline.createInterface({ input, output });
+    for(;;) {
+      const answer = await rl.question('Input a message or "quit".');
+      if ( answer.trim().toLowerCase() === 'quit' ) {
+        return;
+      }
+
+      state.contexts.map( (context)=>{
+        console.log( 'context.frontend', context.frontend );
+        /*await*/ context.frontend.poke( {message: answer, info:'foo'}, 'foo' );
+      });
+
     }
-
-    state.contexts.map( (context)=>{
-      console.log( 'context.frontend', context.frontend );
-      /*await*/ context.frontend.poke( {message: answer, info:'foo'}, 'foo' );
-    });
-
-  }
-})();
+  })();
+}
 
 export { createContext };
 

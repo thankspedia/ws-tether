@@ -18,38 +18,41 @@ function p(o) {
   return set_typesafe_tags( o, 'WEBSOCKET_METHOD' );
 }
 
-function createTimer( proc, millisecond ) {
-  function set(){
+function createTimer( proc ) {
+  function set( proc, interval ){
     return setTimeout(()=>{
       try {
         proc();
       } catch (e) {
         console.error(e);
       }
-      if ( flag ) {
-        set();
+      if ( __running ) {
+        set( proc, interval );
       }
-    }, 3000 );
+    }, interval );
   }
   function reset( handle ) {
     clearTimeout( handle );
   }
   //------------
 
-  let flag = false;
-  let handle =null;
+  let __running = false;
+  let __handle =null;
   return {
-    start() {
-      if ( ! flag ) {
-        flag = true;
-        handle = set();
+    get running() {
+      return __running;
+    },
+    start( interval ) {
+      if ( ! __running ) {
+        __running = true;
+        __handle = set( proc, interval );
       }
     },
     stop() {
-      if ( flag ) {
-        flag = false;
-        reset( handle );
-        handle = null;
+      if ( __running ) {
+        __running = false;
+        reset( __handle );
+        __handle = null;
       }
     }
   };
@@ -100,42 +103,89 @@ Hello.prototype.start = p(
   }
 );
 
-export class WS {
+export class WS extends EventTarget {
   __time = new Date();
-  __check() {
-    this.proc();
+
+  frontendContext = null;
+  backendContext = null;
+  interval = null;
+  websocket = null;
+
+  constructor( context = (()=>{throw new Error()})(), interval = 3000 ) {
+    super();
+    this.frontendContext = context;
+    this.timer = createTimer( this.proc.bind( this ) );
+    this.interval = interval;
   }
-  backend = null;
-  constructor() {
-    this.timer = createTimer( this.__check.bind( this ), 3000 );
-  }
+  __on_online = function () {
+    console.log( 'on_online' );
+    this.start();
+  }.bind(this);
+
+  __on_offline = function (){
+    console.log( 'on_offline' );
+    this.stop();
+  }.bind(this);
 
   start() {
-    this.timer.start();
+    if ( ! this.timer.running ) {
+      if ( typeof window !== 'undefined' ) {
+        window.addEventListener( 'online', this.__on_online );
+        window.addEventListener( 'offline', this.__on_offline );
+
+        if ( navigator.onLine ) {
+          this.timer.start( this.interval );
+        }
+      } else {
+        this.timer.start( this.interval );
+      }
+    }
   }
   stop(){
-    this.timer.stop();
+    if ( this.timer.running ) {
+      this.timer.stop();
+      if ( this.websocket !== null ) {
+        this.websocket.close();
+      }
+      this.websocket = null;
+      this.backendContext  = null;
+    }
   }
+
   async proc(){
-    console.log( 'proc 0' , '__time', this.__time, '__backend', this.backend );
-    if ( this.backend === null ) {
+    console.log( 'proc 0' , '__time', this.__time, '__backend', this.backendContext );
+    if ( this.websocket === null ) {
       console.log( 'proc() initialize' , this.__time );
+
       const websocket = create_websocket( 'ws://schizostylis.local:3632/foo' );
+
+      websocket.addEventListener( 'open', async()=>{
+        console.log( 'WebSocket', 'opened' );
+
+        const {context:backendContext} =  await createContext({ websocket:this.websocket });
+        console.log( 'proc 2' , backendContext );
+
+        this.backendContext = backendContext;
+
+        console.log( 'proc 3' , this.frontendContext );
+
+        this.frontendContext.backend   = backendContext;
+        this.frontendContext.websocket = websocket;
+
+        on_init_websocket_of_ws_frontend_respapi( websocket, this.frontendContext );
+      });
+
+      websocket.addEventListener( 'close', ()=>{
+        console.log( 'WebSocket', 'closed' );
+        this.websocket = null;
+        this.frontendContext.backend = null
+        this.frontendContext.websocket = null
+      });
+
       this.websocket = websocket;
-      const {context:backendContext} =  await createContext({ websocket:this.websocket });
-      console.log( 'proc 2' , backendContext );
-      this.backend = backendContext;
+      this.dispatchEvent( new Event( 'connect', {} ) );
 
-      const frontendContext = Hello.create();
-      console.log( 'proc 3' , frontendContext );
-      frontendContext.backend = backendContext;
-      frontendContext.websocket = websocket;
-      this.frontend = frontendContext;
-
-      on_init_websocket_of_ws_frontend_respapi( websocket, frontendContext );
       await await_websocket( websocket );
-
-
     }
   }
 }
