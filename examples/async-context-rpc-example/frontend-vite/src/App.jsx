@@ -2,22 +2,15 @@ import React from "react";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import {Hello,WS} from './ws.js';
+import { Hello } from './ws.js';
+import { WebSocketReconnector } from 'asynchronous-context-rpc/ws-reconnector';
 // import {hello} from './hello.mjs';
 
-import { createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
-
-// alert( createContext );
-// const context = await createContext({ websocket: new WebSocket( 'ws://schizostylis.local:3632/foo' ) })
-// alert( context );
-// context.hello();
-//
-// alert( hello);
 
 function App() {
   const [count, setCount] = React.useState(0)
 
-  const ref = React.useRef( new WS( Hello.create() ) );
+  const ref = React.useRef( new WebSocketReconnector( Hello.create(), 'ws://schizostylis.local:3632/foo', 3000 ) );
   async function handleClick() {
     try {
       alert('before');
