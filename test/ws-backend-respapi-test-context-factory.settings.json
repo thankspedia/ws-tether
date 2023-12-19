@@ -16,7 +16,7 @@
     "end": true
   },
   "async_context_websocket_backend" : {
-    "context_factory" :"asynchronous-context-rpc/test/ws-backend-respapi-test-context-factory.mjs",
+    "context_factory" : "asynchronous-context-rpc/test/ws-backend-respapi-test-context-factory.mjs",
     "purge_require_cache" : false,
     "static_paths":[],
     "path":  "/foo",

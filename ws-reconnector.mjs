@@ -1,4 +1,5 @@
 
+import React from 'react';
 import  {
  t_handle_message,
  t_respapi_message,
@@ -179,3 +180,19 @@ export class WebSocketReconnector extends EventTarget {
     }
   }
 }
+
+
+export function useWebSocketContext( create_context, ws_url , interval=3000 ) {
+  const ref = React.useRef( new WebSocketReconnector( create_context() , ws_url, interval ) );
+
+  React.useEffect(()=>{
+    console.log( '***** MOUNTED ******', ref.current.id );
+    ref.current.initialize();
+    return ()=>{
+      console.log( '***** UMOUNTED ******', ref.current.id );
+      ref.current.finalize();
+    };
+  });
+  return ref.current;
+}
+
