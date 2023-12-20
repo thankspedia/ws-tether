@@ -483,12 +483,9 @@ function __create_middleware( contextFactory ) {
         /*
          * Processing an Unexpected Error
          */
-        console.error( '6qbDKEbt6Y', err );
+        console.error( 'http-middleware detected an error', '6qbDKEbt6Y', err );
 
         try {
-
-          console.log( 'zvlSApLK8T4', err );
-
           // 8) Send the generated response.
           res.status(500).json( createErroneous( err ) ).end();
 
@@ -496,13 +493,13 @@ function __create_middleware( contextFactory ) {
           // Abort the process.
           return;
         } catch (err) {
-          console.error( 'INTERNAL ERROR : pCzB87JiGgo', err );
+          console.error( 'http-middleware detected an internal error', 'pCzB87JiGgo', err );
         }
 
       } finally {
         try {
           if ( ! done ) {
-            console.error( 'Unexpected Internal Server Error', 'v83dIlsq4' );
+            console.error( 'http-middleware detected an unexpected internal server error', 'v83dIlsq4' );
             if ( context ) {
               context.logger.output(
                 {
@@ -522,7 +519,7 @@ function __create_middleware( contextFactory ) {
           }
         } catch ( err ) {
           try {
-            console.error( 'Double Unexpected Internal Server Error', 'v83dIlsq4', err );
+            console.error( 'http-middleware detected a double unexpected internal server error', 'v83dIlsq4', err );
             if ( context ) {
               context.logger.output(
                 {
@@ -532,7 +529,7 @@ function __create_middleware( contextFactory ) {
               );
             }
           } catch (err) {
-            console.error( 'Triple Unexpected Internal Server Error', 'v83dIlsq4', err );
+            console.error( 'http-middleware detected a triple unexpected internal server error', 'v83dIlsq4', err );
           }
         }
 
@@ -545,7 +542,7 @@ function __create_middleware( contextFactory ) {
             });
           }
         } catch ( err ) {
-          console.error( 'Unexpected Internal Server Error', 'v83dIlsq4', err );
+          console.error( 'http-middleware detected an unexpected internal server error', 'v83dIlsq4', err );
         }
 
         // 10) Output the log of the execution.
@@ -556,7 +553,7 @@ function __create_middleware( contextFactory ) {
               .catch(err=>{console.error(MSG_UNCAUGHT_ERROR);console.error(err)});
           }
         } catch ( err ) {
-          console.error( 'Unexpected Internal Server Error', 'v83dIlsq4', err );
+          console.error( 'http-middleware detected an unexpected internal server error', 'v83dIlsq4', err );
         }
 
         try {
@@ -564,7 +561,7 @@ function __create_middleware( contextFactory ) {
             next();
           }
         } catch (err) {
-          console.error('FINAL ERROR',err);
+          console.error( 'http-middleware detected a final error', err );
         }
       }
     }
