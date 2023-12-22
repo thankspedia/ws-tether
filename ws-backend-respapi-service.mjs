@@ -2,10 +2,14 @@
 import express    from 'express';
 import cors       from  'cors';
 
+
 import { startService } from './service-utils.mjs';
 
 import { loadContextFactory  } from './context-factory-loader.mjs' ;
 import { filenameOfSettings, asyncReadSettings } from 'asynchronous-context/settings' ;
+import { dotenvFromSettings } from 'asynchronous-context/env';
+
+dotenvFromSettings();
 
 import {
   create_websocket_upgrader,
