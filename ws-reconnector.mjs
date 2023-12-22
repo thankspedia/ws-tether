@@ -1,15 +1,65 @@
 
 import React from 'react';
 import  {
- t_handle_message,
- t_respapi_message,
- handle_on_message_of_ws_frontend_respapi,
  on_init_websocket_of_ws_frontend_respapi,
 } from 'asynchronous-context-rpc/ws-frontend-respapi.mjs' ;
+import { respapi } from './respapi.mjs';
 
 import { create_websocket, await_websocket, await_sleep } from 'asynchronous-context-rpc/ws-utils' ;
 
 import { createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
+
+
+
+
+
+async function handle_event_of_ws_frontend( nargs ) {
+  const {
+    event_name         = ((name)=>{throw new Error(`${name} is not defined`)})('event_name'),
+    event_handler_name = ((name)=>{throw new Error(`${name} is not defined`)})('event_handler_name'),
+    context            = ((name)=>{throw new Error(`${name} is not defined`)})('context'),
+    websocket          = ((name)=>{throw new Error(`${name} is not defined`)})('websocket'),
+  } = nargs;
+
+  console.log('LOG','handle_event_of_ws_frontend');
+
+  /*
+   * Call the specified event handler on the context object.
+   */
+  const respapi_result  =
+    await respapi(
+      /* callapi_target */
+      context,
+
+      /* callapi_method_path */
+      // message.command_value.method_path,
+      [event_handler_name],
+
+      /* http-method as TAGS */
+      'WEBSOCKET_EVENT_HANDLER',
+
+      /* on_execution */
+      async ( resolved_callapi_method )=>{
+        /*
+         * Invoking the Resolved Method
+         */
+        const target_method      = resolved_callapi_method.value;
+        const target_method_args = [{websocket,event_name}]; // message.command_value.method_args;
+        return await (context.executeTransaction( target_method, ... target_method_args ));
+      },
+    );
+
+  console.log( 'handle_event_of_ws_frontend : %s', respapi_result );
+
+};
+
+
+
+
+
+
+
+
 
 // alert( createContext );
 // const context = await createContext({ websocket: new WebSocket( 'ws://schizostylis.local:3632/foo' ) })
@@ -163,14 +213,30 @@ export class WebSocketReconnector extends EventTarget {
         this.frontendContext.backend   = backendContext;
         this.frontendContext.websocket = websocket;
 
+        handle_event_of_ws_frontend({
+          event_name         : 'open',
+          event_handler_name : 'on_open',
+          context            : this.frontendContext,
+          websocket          : this.websocket,
+        });
+
         on_init_websocket_of_ws_frontend_respapi( websocket, this.frontendContext );
       });
 
       websocket.addEventListener( 'close', ()=>{
         console.log( 'WebSocket', 'closed' );
+
+        handle_event_of_ws_frontend({
+          event_name         : 'close',
+          event_handler_name : 'on_close',
+          context            : this.frontendContext,
+          websocket          : this.websocket,
+        });
+
         this.websocket = null;
         this.frontendContext.backend = null
         this.frontendContext.websocket = null
+
       });
 
       this.websocket = websocket;

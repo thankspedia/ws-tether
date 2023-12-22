@@ -178,15 +178,21 @@ async function handle_message_of_ws_backend( nargs ) {
       }
     });
 
-    console.log( 'sZc3Uifcwh0',  resolved_callapi_method );
+    console.log( 'dGNndxPMXh',  resolved_callapi_method );
 
-    // 4) get the current authentication token.
-    if ( ( req ) && ( 'set_user_identity' in this ) ) {
-      const authentication_token = get_authentication_token( req );
+    // COMMENTED OUT (Thu, 21 Dec 2023 15:27:24 +0900)
+    // // 4) get the current authentication token.
+    // if ( ( req ) && ( 'set_user_identity' in this ) ) {
+    //   const authentication_token = get_authentication_token( req );
+    //   // (Wed, 07 Sep 2022 20:13:01 +0900)
+    //   await this.set_user_identity( authentication_token );
+    // }
+    // COMMENTED OUT (Thu, 21 Dec 2023 15:27:24 +0900)
 
-      // (Wed, 07 Sep 2022 20:13:01 +0900)
-      await this.set_user_identity( authentication_token );
-    }
+    /*
+     * These steps which are done in this block `context_initializer` should be
+     * shared for the sake of maintainability. (Thu, 21 Dec 2023 15:27:24 +0900)
+     */
 
     this.setOptions({ showReport : false, coloredReport:true });
 
