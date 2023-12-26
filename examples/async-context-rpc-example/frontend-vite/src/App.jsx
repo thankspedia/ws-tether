@@ -13,13 +13,14 @@ function App() {
   const ref = React.useRef( new WebSocketReconnector( Hello.create(), 'ws://schizostylis.local:3632/foo', 3000 ) );
   async function handleClick() {
     try {
-      alert('before');
+      alert( 'before' );
+      alert( 'ref.current', ref.current );
       alert( 'how are you' + ':' +  await ref.current.backendContext.how_are_you(1,2,3) );
-      alert('after');
+      alert( 'after' );
     } catch (e){
       console.error(e);
-      alert('error');
-      alert(e);
+      alert( 'error' );
+      alert( e );
     }
   }
 

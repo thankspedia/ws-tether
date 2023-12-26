@@ -2,14 +2,15 @@
 import { create_callapi                     } from './callapi.mjs' ;
 import { websocket_callapi_handler          } from './ws-callapi.mjs' ;
 import { await_websocket, create_websocket, } from './ws-utils.mjs' ;
-import { createContext,                     } from './ws-callapi-context-factory.mjs' ;
+import { createContext as createCallapiContext } from './ws-callapi-context-factory.mjs' ;
 
-async function asyncCreateWebsocketClientContext( nargs ) {
-  nargs.websocket = create_websocket( nargs.websocket );
-  const context   = createContext({...nargs });
-  await await_websocket( nargs.websocket );
+export async function createContext( nargs ) {
+  const websocket = create_websocket( nargs.websocket );
+  const context   = createCallapiContext({
+    ...nargs,
+    websocket,
+  });
+  await await_websocket( websocket );
   return { context };
 }
-export { asyncCreateWebsocketClientContext as createContext };
-
 

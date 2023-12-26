@@ -86,7 +86,7 @@ async function handle_event_of_ws_backend( nargs ) {
     req                = null,
   } = nargs;
 
-  console.log('LOG','handle_event_of_ws_backend');
+  console.log('LOG', 'handle_event_of_ws_backend');
 
   /*
    * Call the specified event handler on the context object.
@@ -114,7 +114,7 @@ async function handle_event_of_ws_backend( nargs ) {
       },
     );
 
-  console.log( 'handle_event_of_ws_backend : %s', respapi_result );
+  // console.log( 'handle_event_of_ws_backend : %s', respapi_result );
 
   /*
    * Call the specified event handler on the event handler object.
@@ -228,7 +228,21 @@ async function handle_message_of_ws_backend( nargs ) {
          */
         const target_method      = resolved_callapi_method.value
         const target_method_args = message.command_value.method_args;
-        return await (context.executeTransaction( target_method, ... target_method_args ));
+        let is_successful = false;
+        let result = null;
+        try {
+          result = await (context.executeTransaction( target_method, ... target_method_args ));
+          is_successful = true;
+        } catch (e) {
+          console.error( 'respapi_result',e );
+        } finally {
+          if ( context != null ) {
+            context.logger.reportResult( is_successful ?? false )
+              .then( e=>{ console.log('logging finished');  console.error('logging2',e)} )
+              .catch(e=>{ console.error(MSG_UNCAUGHT_ERROR);console.error(e)});
+          }
+          return result;
+        }
       },
     );
 
@@ -269,6 +283,11 @@ async function on_init_websocket_of_ws_backend( nargs ) {
     req             = ((name)=>{ throw new Error( `${name} is not defined` ) } )('websocket'),
   } = nargs;
 
+  websocket[ Symbol.for('nodejs.util.inspect.custom') ] = function() {
+    return '[WebSocket]'
+  };
+
+
   const context = await create_context();
 
   console.log( "LOG" , "on_init_websocket_of_ws_backend" );
@@ -287,6 +306,7 @@ async function on_init_websocket_of_ws_backend( nargs ) {
   };
   context.frontend = createContext({
     websocket,
+    logger : context.logger,
   });
   console.log( 'context.frontend' , context.frontend );
 
@@ -298,6 +318,7 @@ async function on_init_websocket_of_ws_backend( nargs ) {
 
 
   // websocket.on( 'open', async (data)=>(
+  try {
     await handle_event_of_ws_backend(
       {
         event_name         : 'open',
@@ -309,47 +330,62 @@ async function on_init_websocket_of_ws_backend( nargs ) {
         // data            ,
       }
     )
+  } catch (e) {
+    console.error( 'handle_event_of_ws_backend', e );
+  }
   // ));
 
-  websocket.on( 'close', async (data)=>(
-    handle_event_of_ws_backend(
-      {
-        event_name         : 'close',
-        event_handler_name : 'on_close',
-        event_handlers  ,
-        context         ,
-        websocket       ,
-        req             ,
-        // data            ,
-      }
-    )
-  ));
+  websocket.on( 'close', async (data)=>{
+    try {
+      await handle_event_of_ws_backend(
+        {
+          event_name         : 'close',
+          event_handler_name : 'on_close',
+          event_handlers  ,
+          context         ,
+          websocket       ,
+          req             ,
+          // data            ,
+        }
+      )
+    } catch (e){
+      console.error( 'handle_event_of_ws_backend', e );
+    }
+  });
 
-  websocket.on( 'error', async ()=>(
-    handle_event_of_ws_backend(
-      {
-        event_name         : 'error',
-        event_handler_name : 'on_error',
-        event_handlers  ,
-        context         ,
-        websocket       ,
-        req             ,
-        // data            ,
-      }
-    )
-  ));
+  websocket.on( 'error', async ()=>{
+    try {
+      await handle_event_of_ws_backend(
+        {
+          event_name         : 'error',
+          event_handler_name : 'on_error',
+          event_handlers  ,
+          context         ,
+          websocket       ,
+          req             ,
+          // data            ,
+        }
+      )
+    } catch (e) {
+      console.error( 'handle_event_of_ws_backend', e );
+    }
+  });
 
-  websocket.on( 'message', (data)=>(
-    handle_message_of_ws_backend(
-      {
-        event_handlers  ,
-        context         ,
-        websocket       ,
-        req             ,
-        data            ,
-      }
-    )
-  ));
+  websocket.on( 'message', async (data)=>{
+    try {
+      await handle_message_of_ws_backend(
+        {
+          event_handlers  ,
+          context         ,
+          websocket       ,
+          req             ,
+          data            ,
+        }
+      )
+    } catch (e) {
+      console.error('handle_message_of_ws_backend ERROR',e);
+    }
+  });
 
 }
 

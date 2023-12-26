@@ -10,12 +10,12 @@ import { useWebSocketContext } from 'asynchronous-context-rpc/ws-reconnector';
 function App() {
   const [count, setCount] = React.useState(0)
 
-  const {frontendContext,backendContext} = useWebSocketContext( ()=>Hello.create(), 'ws://schizostylis.local:3632/foo', 3000 );
+  const contexts = useWebSocketContext( ()=>Hello.create(), 'ws://schizostylis.local:3632/foo', 3000 );
 
   async function handleClick() {
     try {
       alert('before');
-      alert( 'how are you' + ':' +  await backendContext.how_are_you(1,2,3) );
+      alert( 'how are you' + ':' +  await contexts.backendContext.how_are_you(1,2,3) );
       alert('after');
     } catch (e){
       console.error(e);

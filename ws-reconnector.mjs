@@ -203,7 +203,10 @@ export class WebSocketReconnector extends EventTarget {
       websocket.addEventListener( 'open', async()=>{
         console.log( 'WebSocket', 'opened' );
 
-        const {context:backendContext} =  await createContext({ websocket:this.websocket });
+        const { context:backendContext } =  await createContext({
+          websocket : this.websocket,
+          logger    : this.frontendContext.logger,
+        });
         console.log( 'proc 2' , backendContext );
 
         this.backendContext = backendContext;
