@@ -1,0 +1,33 @@
+{
+  "name": "asynchronous-context-rpc",
+  "version": "1.0.1",
+  "description": "Implement Remote Procedure Call in Node.js (beta)",
+  "main": "service.mjs",
+  "type": "module",
+  "exports": {
+    "./*" : "./*",
+    "./ws.mjs"                                     :   "./ws.mjs"                                   ,
+    "./ws"                                         :   "./ws.mjs"                                   ,
+    "./ws-reconnector.mjs"                         :   "./ws-reconnector.mjs"                       ,
+    "./ws-reconnector"                             :   "./ws-reconnector.mjs"                       ,
+    "./ws-utils.mjs"                               :   "./ws-utils.mjs"                             ,
+    "./ws-utils"                                   :   "./ws-utils.mjs"
+  },
+  "bin": {
+    "start-http-middleware-service": "bin/start-http-middleware-service.mjs",
+    "start-ws-service": "bin/start-ws-service.mjs",
+    "start-service": "bin/start-service.mjs"
+  },
+  "scripts": {
+    "end": ""
+  },
+  "author": "Atsushi Oka (Kombucha.js)",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.0.0-beta.1",
+    "morgan": "^1.10.0",
+    "npm": "^10.2.4",
+    "ws": "^8.13.0"
+  }
+}
