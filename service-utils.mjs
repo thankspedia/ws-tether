@@ -59,8 +59,16 @@ function startService( __createService ) {
    *
    * See : https://www.google.com/search?gl=us&q=unhandledRejection
    */
+  console.info( '[asynchronous-context-rpc] unhandled rejection handler is configured' );
   process.on( 'unhandledRejection', (reason, p) =>{
     console.error( '***Unhandled Rejection at Promise***','reason:', reason, 'promise:', p );
+  });
+
+  console.info( '[asynchronous-context-rpc] uncaught exception handler is configured' );
+  process.on( 'uncaughtException', (err, origin) =>{
+    console.error( '***Unhandled Exception***',
+      `Caught exception: ${err}\n` +
+      `Exception origin: ${origin}` );
   });
 
   let serverList = [];

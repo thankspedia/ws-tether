@@ -46,7 +46,7 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
                     const server = e.listen(
                       port,
                       (e)=>{
-                        console.log( 'ws-server opened', 'C3FXWHjYwU0' );
+                        console.log( '[ws-backend-respapi-service] opened', 'C3FXWHjYwU0' );
                       }
                     );
 
@@ -73,23 +73,23 @@ const create_service_factory = ( create_app, ports, handle_upgrade )=>{
                 )
               )
             );
-            console.log('nTPf8R8RExE', {services} );
+            console.log( '[ws-backend-respapi-service] service is started', 'nTPf8R8RExE'  );
           },
 
           stop() {
             services.forEach( e=>e.close(
               (e)=>{
                 if ( e ) {
-                  console.error( 'ws-server closed(with error)', e, 'C3FXWHjYwU0' );
+                  console.error( '[ws-backend-respapi-service] closed(with error)', e, 'C3FXWHjYwU0' );
                 } else {
-                  console.log( 'ws-server closed', 'C3FXWHjYwU0' );
+                  console.log( '[ws-backend-respapi-service] closed', 'C3FXWHjYwU0' );
                 }
               }
             ));
             services.length = 0;
             console.log('nTPf8R8RExE', {services} );
 
-            console.log( 'ws-server closed 2', 'C3FXWHjYwU0' );
+            console.log( '[ws-backend-respapi-service] closed 2', 'C3FXWHjYwU0' );
             for ( const i of sockets.values() ) {
               i.destroy();
             }

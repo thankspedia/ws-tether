@@ -75,7 +75,7 @@ function createTimer( proc ) {
         // BE AWARE! : proc could be an async function. (Tue, 26 Dec 2023 15:56:48 +0900)
         await proc();
       } catch (e) {
-        console.error(e);
+        console.error( 'createTimer', e);
       }
       if ( __running ) {
         set( proc, interval );
@@ -194,10 +194,10 @@ export class WebSocketReconnector extends EventTarget {
   }
 
   async proc(){
-    console.log( 'proc 0' , 'id ', this.id, 'timer.id' , this?.timer?.id ?? 'null' ,  '__backend', this.backendContext );
+    console.log( '[ws-reconnector] proc 0' , 'id ', this.id, 'timer.id' , this?.timer?.id ?? 'null' ,  '__backend', this.backendContext );
 
     if ( this.websocket === null ) {
-      console.log( 'proc() initialize' , this.id );
+      console.log( '[ws-reconnector] proc() initialize' , this.id );
 
       const websocket = create_websocket( this.ws_url );
 
@@ -209,23 +209,32 @@ export class WebSocketReconnector extends EventTarget {
             websocket : this.websocket,
             logger    : this.frontendContext.logger,
           });
-          console.log( 'proc 2' , backendContext );
+
+          console.log( '[ws-reconnector] proc 2' , backendContext );
 
           this.backendContext = backendContext;
 
-          console.log( 'proc 3' , this.frontendContext );
+          console.log( '[ws-reconnector] proc 3' , this.frontendContext );
 
           this.frontendContext.backend   = backendContext;
           this.frontendContext.websocket = websocket;
 
-          await handle_event_of_ws_frontend({
-            event_name         : 'open',
-            event_handler_name : 'on_open',
-            context            : this.frontendContext,
-            websocket          : this.websocket,
-          });
+          try {
+            await handle_event_of_ws_frontend({
+              event_name         : 'open',
+              event_handler_name : 'on_open',
+              context            : this.frontendContext,
+              websocket          : this.websocket,
+            });
+          } catch (e) {
+            console.error(e);
+          }
 
-          on_init_websocket_of_ws_frontend_respapi( websocket, this.frontendContext );
+          try {
+            on_init_websocket_of_ws_frontend_respapi( websocket, this.frontendContext );
+          } catch (e) {
+            console.error(e);
+          }
         } catch ( e ){
           console.error( 'ws-reconnector.proc() error' , e );
         }
@@ -234,12 +243,16 @@ export class WebSocketReconnector extends EventTarget {
       websocket.addEventListener( 'close', async ()=>{
         console.log( 'WebSocket', 'closed' );
 
-        await handle_event_of_ws_frontend({
-          event_name         : 'close',
-          event_handler_name : 'on_close',
-          context            : this.frontendContext,
-          websocket          : this.websocket,
-        });
+        try {
+          await handle_event_of_ws_frontend({
+            event_name         : 'close',
+            event_handler_name : 'on_close',
+            context            : this.frontendContext,
+            websocket          : this.websocket,
+          });
+        } catch ( e ) {
+          console.error('handle_event_of_ws_frontend on_close threw an error. ignored. ', e);
+        }
 
         this.websocket = null;
         this.frontendContext.backend = null

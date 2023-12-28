@@ -86,7 +86,7 @@ async function handle_event_of_ws_backend( nargs ) {
     req                = null,
   } = nargs;
 
-  console.log('LOG', 'handle_event_of_ws_backend');
+  console.log('LOG', 'handle_event_of_ws_backend', event_handler_name );
 
   /*
    * Call the specified event handler on the context object.
@@ -105,12 +105,31 @@ async function handle_event_of_ws_backend( nargs ) {
 
       /* on_execution */
       async ( resolved_callapi_method )=>{
+
+        // context.logger.reset();
+        context.setOptions({ showReport : true, coloredReport:true });
+
         /*
          * Invoking the Resolved Method
          */
         const target_method      = resolved_callapi_method.value;
         const target_method_args = [{websocket,event_name}]; // message.command_value.method_args;
-        return await (context.executeTransaction( target_method, ... target_method_args ));
+
+        let is_successful = false;
+        let result = null;
+        try {
+          result = await (context.executeTransaction( target_method, ... target_method_args ));
+          is_successful = true;
+        } catch (e) {
+          console.error( 'respapi_result',e );
+        } finally {
+          // if ( context != null ) {
+          //   context.logger.reportResult( is_successful ?? false )
+          //     .then( e=>{ console.log('logging finished');  console.error('logging2',e)} )
+          //     .catch(e=>{ console.error(MSG_UNCAUGHT_ERROR);console.error(e)});
+          // }
+          return result;
+        }
       },
     );
 
@@ -180,21 +199,11 @@ async function handle_message_of_ws_backend( nargs ) {
 
     console.log( 'dGNndxPMXh',  resolved_callapi_method );
 
-    // COMMENTED OUT (Thu, 21 Dec 2023 15:27:24 +0900)
-    // // 4) get the current authentication token.
-    // if ( ( req ) && ( 'set_user_identity' in this ) ) {
-    //   const authentication_token = get_authentication_token( req );
-    //   // (Wed, 07 Sep 2022 20:13:01 +0900)
-    //   await this.set_user_identity( authentication_token );
-    // }
-    // COMMENTED OUT (Thu, 21 Dec 2023 15:27:24 +0900)
-
     /*
      * These steps which are done in this block `context_initializer` should be
      * shared for the sake of maintainability. (Thu, 21 Dec 2023 15:27:24 +0900)
      */
-
-    this.setOptions({ showReport : false, coloredReport:true });
+    this.setOptions({ showReport : true, coloredReport:true });
 
     if ( resolved_callapi_method.tags.includes( AUTO_CONNECTION ) ) {
       console.log( 'ew6pMCEV3o', resolved_callapi_method );
@@ -228,6 +237,7 @@ async function handle_message_of_ws_backend( nargs ) {
          */
         const target_method      = resolved_callapi_method.value
         const target_method_args = message.command_value.method_args;
+
         let is_successful = false;
         let result = null;
         try {
@@ -337,6 +347,7 @@ async function on_init_websocket_of_ws_backend( nargs ) {
 
   websocket.on( 'close', async (data)=>{
     try {
+      console.log( 'websocket on_close' );
       await handle_event_of_ws_backend(
         {
           event_name         : 'close',
