@@ -17,7 +17,10 @@ if ( typeof (__WebSocket.prototype.addEventHandler) === 'undefined' ) {
   };
 }
 
-export { __WebSocket as WebSocket };
+const __createWebSocket = (...args)=>new __WebSocket(...args);
 
-
+export {
+  __WebSocket       as WebSocket,
+  __createWebSocket as createWebSocket,
+};
 

@@ -1,17 +1,17 @@
 {
-  "name": "asynchronous-context-rpc",
-  "version": "1.0.1",
+  "name": "ws-tether",
+  "version": "1.0.0",
   "description": "Implement Remote Procedure Call in Node.js (beta)",
-  "main": "service.mjs",
   "type": "module",
   "exports": {
-    "./*" : "./*",
-    "./ws.mjs"                                     :   "./ws.mjs"                                   ,
-    "./ws"                                         :   "./ws.mjs"                                   ,
-    "./ws-reconnector.mjs"                         :   "./ws-reconnector.mjs"                       ,
-    "./ws-reconnector"                             :   "./ws-reconnector.mjs"                       ,
-    "./ws-utils.mjs"                               :   "./ws-utils.mjs"                             ,
-    "./ws-utils"                                   :   "./ws-utils.mjs"
+    "./*"                                          :   "./*"                   ,
+    "."                                            :   "./ws-tether.mjs"       ,
+    "./ws-tether.mjs"                              :   "./ws-tether.mjs"       ,
+    "./ws-tether"                                  :   "./ws-tether.mjs"       ,
+    "./hook.mjs"                                   :   "./hook.mjs"            ,
+    "./hook"                                       :   "./hook.mjs"            ,
+    "./ws.mjs"                                     :   "./ws.mjs"              ,
+    "./ws"                                         :   "./ws.mjs"
   },
   "bin": {
     "start-http-middleware-service": "bin/start-http-middleware-service.mjs",
