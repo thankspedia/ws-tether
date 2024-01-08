@@ -11,6 +11,9 @@ function App() {
   const contexts = useWebSocketTether({
     webSocketFactory : ()=>new WebSocket( 'ws://schizostylis.local:3632/foo' ),
     interval         : 3000,
+    on_message       : (...args)=>{
+      console.error( 'APP', ...args );
+    },
   });
 
   async function handleClick() {

@@ -21,7 +21,7 @@ function createTimer( proc ) {
         // BE AWARE! : proc could be an async function. (Tue, 26 Dec 2023 15:56:48 +0900)
         await proc();
       } catch (e) {
-        console.error( 'createTimer', e);
+        console.error( 'createTimer', e );
       }
       if ( __running ) {
         set( proc, interval );
@@ -118,7 +118,7 @@ class WebSocketManager {
       this.currentOpen        = false;
       this.currentClosed      = false;
     } catch (e) {
-      console.error( WS_TETHER, 'proc() create' , this.id, e );
+      console.error( WS_TETHER, 'enable()' , this.id, e );
     }
 
     try {
@@ -126,29 +126,29 @@ class WebSocketManager {
       // If it reaches to here, open/error event should be fired.
     } catch (e) {
       this.currentThrownError = true;
-      console.error( WS_TETHER, 'proc() create' , this.id, e );
+      console.error( WS_TETHER, 'enable() create' , this.id, e );
     }
 
     if ( ! this.currentThrownError ) {
       try {
         this.currentWebSocket.addEventListener( 'open', this.__on_open );
       } catch (e) {
-        console.error( WS_TETHER, 'proc() create' , this.id, e );
+        console.error( WS_TETHER, 'enable() create' , this.id, e );
       }
       try {
         this.currentWebSocket.addEventListener( 'close', this.__on_close );
       } catch (e) {
-        console.error( WS_TETHER, 'proc() create' , this.id, e );
+        console.error( WS_TETHER, 'enable() create' , this.id, e );
       }
       try {
         this.currentWebSocket.addEventListener( 'error', this.__on_error );
       } catch (e) {
-        console.error( WS_TETHER, 'proc() create' , this.id, e );
+        console.error( WS_TETHER, 'enable() create' , this.id, e );
       }
       try {
         this.currentWebSocket.addEventListener( 'message', this.__on_message );
       } catch (e) {
-        console.error( WS_TETHER, 'proc() create' , this.id, e );
+        console.error( WS_TETHER, 'enable() create' , this.id, e );
       }
     }
   }
@@ -177,7 +177,7 @@ class WebSocketManager {
 }
 
 
-export class WebSocketTether extends EventTarget {
+export class WebSocketTether /* extends EventTarget */ {
   id                 = Math.trunc( Math.random() * 65536 );
   webSocketFactory   = null;
   interval           = null;
@@ -187,18 +187,32 @@ export class WebSocketTether extends EventTarget {
   initialized        = false;
   webSocketManager   = null;
 
-  constructor({
-    webSocketFactory = (()=>{throw new Error('webSocketFactory is not specified')})(),
-    interval         = 1000,
-    initialization   = ()=>{},
-    finalization     = ()=>{},
-  }) {
-    super();
-    this.webSocketFactory = webSocketFactory;
-    this.interval         = interval;
-    this.timer            = createTimer( this.proc.bind( this ) );
-    this.initialization   = initialization;
-    this.finalization     = finalization;
+  constructor(nargs) {
+    // super();
+    const {
+      webSocketFactory    = (()=>{throw new Error('webSocketFactory is not specified')})(),
+      interval            = 1000,
+      on_initialization   = ()=>{},
+      on_finalization     = ()=>{},
+      on_online           = ()=>{},
+      on_offline          = ()=>{},
+      on_open             = ()=>{},
+      on_close            = ()=>{},
+      on_error            = ()=>{},
+      on_message          = ()=>{},
+    } = nargs;
+
+    this.webSocketFactory    = webSocketFactory;
+    this.interval            = interval;
+    this.timer               = createTimer( this.proc.bind( this ) );
+    this.on_initialization   = on_initialization;
+    this.on_finalization     = on_finalization;
+    this.on_online           = on_online;
+    this.on_offline          = on_offline;
+    this.on_open             = on_open;
+    this.on_close            = on_close;
+    this.on_error            = on_error;
+    this.on_message          = on_message;
 
     if ( typeof navigator !== 'undefined' ) {
       if ( navigator.onLine ) {
@@ -216,11 +230,21 @@ export class WebSocketTether extends EventTarget {
   __on_online = function () {
     console.log( 'on_online', this.id );
     this.isOnline = true;
+    try {
+      this.on_online(this);
+    } catch (e) {
+      console.error(e);
+    }
   }.bind(this);
 
   __on_offline = function () {
     console.log( 'on_offline', this.id );
     this.isOnline = false;
+    try {
+      this.on_offline(this);
+    } catch (e) {
+      console.error(e);
+    }
   }.bind(this);
 
   /*
@@ -255,7 +279,7 @@ export class WebSocketTether extends EventTarget {
       }
 
       try {
-        this.initialization(this);
+        this.on_initialization(this);
       } catch (e) {
         console.error(e);
       }
@@ -279,7 +303,7 @@ export class WebSocketTether extends EventTarget {
     }
 
     try {
-      this.finalization(this);
+      this.on_finalization(this);
     } catch (e) {
       console.error(e);
     }
@@ -309,24 +333,44 @@ export class WebSocketTether extends EventTarget {
     }
   }
 
-  __on_open    = function (e) {
+  __on_open    = function ( ...args) {
     console.log( WS_TETHER, 'on_open', this.id );
-    this.dispatchEvent( new CustomEvent( "open",    { detail: { webSocket : e.target             }}));
+    // this.dispatchEvent( new CustomEvent( "open",    { detail: { webSocket : e.target             }}));
+    try {
+      this.on_open.call( this, ...args );
+    } catch (e) {
+      console.error('ws-tether.on_open',e);
+    }
   }.bind(this);
 
-  __on_close   = function (e) {
+  __on_close   = function (...args) {
     console.log( WS_TETHER, 'on_close', this.id );
-    this.dispatchEvent( new CustomEvent( "close",   { detail: { webSocket : e.target             }}));
+    // this.dispatchEvent( new CustomEvent( "close",   { detail: { webSocket : e.target             }}));
+    try {
+      this.on_close.call(this,...args);
+    } catch (e) {
+      console.error('ws-tether.on_close',e);
+    }
   }.bind(this);
 
-  __on_error   = function (e) {
+  __on_error   = function ( ...args ) {
     console.log( WS_TETHER, 'on_error', this.id );
-    this.dispatchEvent( new CustomEvent( "error",   { detail: { webSocket : e.target             }}));
+    // this.dispatchEvent( new CustomEvent( "error",   { detail: { webSocket : e.target             }}));
+    try {
+      this.on_error.call( this, ...args );
+    } catch (e) {
+      console.error('ws-tether.on_error',e);
+    }
   }.bind(this);
 
-  __on_message = function (e) {
+  __on_message = function ( ...args) {
     console.log( WS_TETHER, 'on_message', this.id );
-    this.dispatchEvent( new CustomEvent( "message", { detail: { webSocket : e.target, message:e  }}));
+    // this.dispatchEvent( new CustomEvent( "message", { detail: { webSocket : e.target, message:e  }}));
+    try {
+      this.on_message.call( this, ...args );
+    } catch (e) {
+      console.error( 'ws-tether.on_message', e );
+    }
   }.bind(this);
 
   async proc() {
@@ -373,7 +417,7 @@ export class WebSocketTether extends EventTarget {
           console.error(e);
         }
         try {
-          this.webSocketManager = false;
+          this.webSocketManager = null;
         } catch (e) {
           console.error(e);
         }
