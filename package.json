@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Implement Remote Procedure Call in Node.js (beta)",
   "type": "module",
+  "main": "./ws-tether.mjs",
   "exports": {
     "./*"                                          :   "./*"                   ,
     "."                                            :   "./ws-tether.mjs"       ,

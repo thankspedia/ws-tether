@@ -9,9 +9,9 @@ import { useWebSocketTether } from 'ws-tether/hook';
 function App() {
   const [count, setCount] = React.useState(0)
   const contexts = useWebSocketTether({
-    webSocketFactory : ()=>new WebSocket( 'ws://schizostylis.local:3632/foo' ),
-    interval         : 3000,
-    on_message       : (...args)=>{
+    websocket_factory : ()=>new WebSocket( 'ws://schizostylis.local:3632/foo' ),
+    interval          : 3000,
+    on_message        : (...args)=>{
       console.error( 'APP', ...args );
     },
   });
