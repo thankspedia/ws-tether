@@ -228,6 +228,16 @@ class WebSocketManager {
  * If `url` argument is specified, `websocket_factory` will be overridden
  * by the closure which is expressed as `()=>create_websocket( url )`.
  *
+ *  Properties
+ * --------------------------------
+ *
+ * === is_online ===
+ * `is_online` properyty is true if there is a valid WebSocket connection.
+ *
+ * === is_online ===
+ * `is_online` properyty is true if there is a valid WebSocket connection.
+ *
+ *
  */
 
 export class WebSocketTether /* extends EventTarget */ {
@@ -292,6 +302,10 @@ export class WebSocketTether /* extends EventTarget */ {
   }
 
   get websocket() {
+    return this?.websocket_manager?.currentWebSocket ?? null;
+  }
+
+  get current_websocket() {
     return this?.websocket_manager?.currentWebSocket ?? null;
   }
 
