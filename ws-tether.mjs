@@ -268,6 +268,7 @@ export class WebSocketTether /* extends EventTarget */ {
     this.configs = Object.assign( {}, default_configs, arg_configs );
     this.timer   = createTimer( this.proc.bind( this ) );
 
+    console.log( 'this.configs', this.configs );
     if ( this.configs.url !== null ) {
       this.configs.websocket_factory = ()=>{
         return create_websocket( this.configs.url );

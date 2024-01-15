@@ -5,7 +5,7 @@
 // const UtilWebSocket = ( typeof WebSocket !== 'undefined' ? WebSocket  :  await import( "ws" ) )
 
 // const UtilWebSocket = await (async()=> typeof WebSocket !== 'undefined' ? WebSocket : await import('ws') )();
-import { WebSocket } from "asynchronous-context-rpc/ws";
+import { WebSocket } from "./ws.mjs";
 
 const WEBSOCKET = {
   CONNECTING : 0,  // Socket has been created. The connection is not yet open.
