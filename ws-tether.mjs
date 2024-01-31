@@ -261,8 +261,9 @@ export class WebSocketTether /* extends EventTarget */ {
   id                 = Math.trunc( Math.random() * 65536 );
   is_online          = null;
   timer              = null;
-  is_initialized        = false;
-  websocket_manager   = null;
+  is_initialized     = false;
+  is_open            = false;
+  websocket_manager  = null;
 
   constructor( arg_configs ) {
     this.configs = Object.assign( {}, default_configs, arg_configs );
@@ -409,6 +410,7 @@ export class WebSocketTether /* extends EventTarget */ {
   __on_open    = function ( ...args) {
     console.log( WS_TETHER, 'on_open', this.id );
     // this.dispatchEvent( new CustomEvent( "open",    { detail: { webSocket : e.target             }}));
+    this.is_open = true;
     try {
       this.configs.on_open.call( this, ...args );
     } catch (e) {
@@ -419,6 +421,7 @@ export class WebSocketTether /* extends EventTarget */ {
   __on_close   = function (...args) {
     console.log( WS_TETHER, 'on_close', this.id );
     // this.dispatchEvent( new CustomEvent( "close",   { detail: { webSocket : e.target             }}));
+    this.is_open = false;
     try {
       this.configs.on_close.call(this,...args);
     } catch (e) {
@@ -429,6 +432,7 @@ export class WebSocketTether /* extends EventTarget */ {
   __on_error   = function ( ...args ) {
     console.log( WS_TETHER, 'on_error', this.id );
     // this.dispatchEvent( new CustomEvent( "error",   { detail: { webSocket : e.target             }}));
+    this.is_open = false;
     try {
       this.configs.on_error.call( this, ...args );
     } catch (e) {
