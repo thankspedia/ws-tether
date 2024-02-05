@@ -2,6 +2,8 @@ import { create_websocket } from 'ws-tether/ws-utils';
 
 const WS_TETHER = '[ws-tether]';
 const WS_MANAGER = '[ws-manager]';
+const DEBUG = false;
+
 
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
@@ -69,7 +71,7 @@ class WebSocketManager {
 
   __on_open    = function (...args) {
     this.current_open = true;
-    console.log( WS_MANAGER, 'on_open',    this.tether?.id ?? '[already disabled]' );
+    console.info( WS_MANAGER, 'on_open',    this.tether?.id ?? '[already disabled]' );
     try {
       this.tether?.__on_open.call( this.tether, ...args );
     } catch (e){
@@ -79,7 +81,7 @@ class WebSocketManager {
 
   __on_close   = function (...args) {
     this.current_closed = true;
-    console.log( WS_MANAGER, 'on_close',   this.tether?.id ?? '[already disabled]' );
+    console.info( WS_MANAGER, 'on_close',   this.tether?.id ?? '[already disabled]' );
     try {
       this.tether?.__on_close.call( this.tether, ...args );
     } catch (e){
@@ -89,7 +91,7 @@ class WebSocketManager {
 
   __on_error   = function (...args) {
     this.current_error = true;
-    console.log( WS_MANAGER, 'on_error',   this.tether?.id ?? '[already disabled]' );
+    console.info( WS_MANAGER, 'on_error',   this.tether?.id ?? '[already disabled]' );
     try {
       this.tether?.__on_error.call( this.tether, ...args );
     } catch(e){
@@ -98,7 +100,7 @@ class WebSocketManager {
   }.bind(this);
 
   __on_message = function (...args) {
-    console.log( WS_MANAGER, 'on_message', this.tether?.id ?? '[already disabled]' );
+    console.info( WS_MANAGER, 'on_message', this.tether?.id ?? '[already disabled]' );
     try {
       this.tether?.__on_message.call( this.tether, ...args );
     } catch (e){
@@ -269,7 +271,7 @@ export class WebSocketTether /* extends EventTarget */ {
     this.configs = Object.assign( {}, default_configs, arg_configs );
     this.timer   = createTimer( this.proc.bind( this ) );
 
-    console.log( 'this.configs', this.configs );
+    console.info( 'this.configs', this.configs );
     if ( this.configs.url !== null ) {
       this.configs.websocket_factory = ()=>{
         return create_websocket( this.configs.url );
@@ -302,7 +304,7 @@ export class WebSocketTether /* extends EventTarget */ {
   }
 
   __on_online = function () {
-    console.log( 'on_online', this.id );
+    console.info( 'on_online', this.id );
     this.is_online = true;
     try {
       this.configs.on_online.call( this );
@@ -312,7 +314,7 @@ export class WebSocketTether /* extends EventTarget */ {
   }.bind(this);
 
   __on_offline = function () {
-    console.log( 'on_offline', this.id );
+    console.info( 'on_offline', this.id );
     this.is_online = false;
     try {
       this.configs.on_offline.call( this );
@@ -408,7 +410,7 @@ export class WebSocketTether /* extends EventTarget */ {
   }
 
   __on_open    = function ( ...args) {
-    console.log( WS_TETHER, 'on_open', this.id );
+    console.info( WS_TETHER, 'on_open', this.id );
     // this.dispatchEvent( new CustomEvent( "open",    { detail: { webSocket : e.target             }}));
     this.is_open = true;
     try {
@@ -419,7 +421,7 @@ export class WebSocketTether /* extends EventTarget */ {
   }.bind(this);
 
   __on_close   = function (...args) {
-    console.log( WS_TETHER, 'on_close', this.id );
+    console.info( WS_TETHER, 'on_close', this.id );
     // this.dispatchEvent( new CustomEvent( "close",   { detail: { webSocket : e.target             }}));
     this.is_open = false;
     try {
@@ -430,7 +432,7 @@ export class WebSocketTether /* extends EventTarget */ {
   }.bind(this);
 
   __on_error   = function ( ...args ) {
-    console.log( WS_TETHER, 'on_error', this.id );
+    console.info( WS_TETHER, 'on_error', this.id );
     // this.dispatchEvent( new CustomEvent( "error",   { detail: { webSocket : e.target             }}));
     this.is_open = false;
     try {
@@ -441,7 +443,7 @@ export class WebSocketTether /* extends EventTarget */ {
   }.bind(this);
 
   __on_message = function ( ...args) {
-    console.log( WS_TETHER, 'on_message', this.id );
+    console.info( WS_TETHER, 'on_message', this.id );
     // this.dispatchEvent( new CustomEvent( "message", { detail: { webSocket : e.target, message:e  }}));
     try {
       this.configs.on_message.call( this, ...args );
@@ -451,10 +453,10 @@ export class WebSocketTether /* extends EventTarget */ {
   }.bind(this);
 
   async proc() {
-    console.log( WS_TETHER, 'proc 0' , 'id ', this.id, 'timer.id' , this?.timer?.id ?? 'null' );
+    console.info( WS_TETHER, 'proc 0' , 'id ', this.id, 'timer.id' , this?.timer?.id ?? 'null' );
 
     if ( this.websocket_manager === null ) {
-      console.log( WS_TETHER, 'proc() create' , this.id );
+      console.info( WS_TETHER, 'proc() create' , this.id );
       if ( this.is_online ) {
         try {
           this.websocket_manager = new WebSocketManager({ tether : this });
