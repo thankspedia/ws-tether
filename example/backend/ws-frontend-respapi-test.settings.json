@@ -3,8 +3,12 @@
   },
   "async_context_websocket_backend" : {
     "context_factory2" :"ws-tether/example/backend/ws-frontend-respapi-test-context-factory.mjs",
-    "context_factory" :"./ws-frontend-respapi-test-context-factory.mjs",
-    "purge_require_cache" : false,
+    "context_factory" :{
+      "path" : "./ws-frontend-respapi-test-context-factory.mjs",
+      "options" : {
+        "purge_require_cache" : false
+      }
+    },
     "static_paths":[],
     "ports": [ 3000, 3632 ],
     "path" : "/foo",
