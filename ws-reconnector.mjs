@@ -23,6 +23,7 @@ async function handle_on_event_of_ws_frontend_respapi( nargs ) {
 
   console.log('LOG','handle_on_event_of_ws_frontend_respapi');
 
+  const target_method_args = [{websocket,event_name}]; // message.command_value.method_args;
   /*
    * Call the specified event handler on the context object.
    */
@@ -35,16 +36,18 @@ async function handle_on_event_of_ws_frontend_respapi( nargs ) {
       // message.command_value.method_path,
       [event_handler_name],
 
+      /* callapi_method_args */
+      target_method_args,
+
       /* http-method as TAGS */
       'WEBSOCKET_EVENT_HANDLER',
 
       /* on_execution */
-      async ( resolved_callapi_method )=>{
+      async ( resolved_callapi_method, target_method_args )=>{
         /*
          * Invoking the Resolved Method
          */
         const target_method      = resolved_callapi_method.value;
-        const target_method_args = [{websocket,event_name}]; // message.command_value.method_args;
         return await (context.executeTransaction( target_method, ... target_method_args ));
       },
     );
