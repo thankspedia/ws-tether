@@ -10,8 +10,11 @@ const __WebSocket = typeof WebSocket === 'undefined' ? (await import('ws')).WebS
 //
 // Object.assign( __WebSocket, WEBSOCKET );
 
+/*
+ * Polyfill for ws module which has no addEventHandler for some reason.
+ */
 if ( typeof (__WebSocket.prototype.addEventHandler) === 'undefined' ) {
-  console.warn( 'WebSocket.prototype.addEventHandler === undefined' ) ;
+  // console.warn( 'WebSocket.prototype.addEventHandler === undefined' ) ;
   __WebSocket.prototype.addEventHandler = function(...args) {
     return this.on( ...args );
   };
