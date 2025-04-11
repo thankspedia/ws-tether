@@ -1,16 +1,15 @@
 
 import React from 'react';
+
 import  {
  on_init_websocket_of_ws_frontend_respapi,
 } from 'asynchronous-context-rpc/ws-frontend-respapi.mjs' ;
-import { respapi } from './respapi.mjs';
 
-import { create_websocket, await_websocket, await_sleep } from 'asynchronous-context-rpc/ws-utils' ;
+import { respapi } from 'asynchronous-context-rpc/respapi.mjs';
+
+import { create_websocket, await_websocket, await_sleep } from 'ws-tether/ws-utils' ;
 
 import { createContext } from  'asynchronous-context-rpc/ws-frontend-callapi-context-factory' ;
-
-
-
 
 
 async function handle_on_event_of_ws_frontend_respapi( nargs ) {
