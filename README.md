@@ -1,8 +1,3 @@
-
- Asynchronous-Context-RPC
-================================================================================
-
-
 # ws-tether
 
 `ws-tether` is a lightweight Node.js module designed to maintain persistent
