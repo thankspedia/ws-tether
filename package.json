@@ -1,7 +1,7 @@
 {
   "name": "ws-tether",
   "version": "1.0.0",
-  "description": "Implement Remote Procedure Call in Node.js (beta)",
+  "description": "A lightweight Node.js framework leveraging WebSockets to seamlessly \"tether\" clients to backend servers.",
   "type": "module",
   "main": "./ws-tether.mjs",
   "exports": {
@@ -14,15 +14,10 @@
     "./ws.mjs"                                     :   "./ws.mjs"              ,
     "./ws"                                         :   "./ws.mjs"
   },
-  "bin": {
-    "start-http-middleware-service": "bin/start-http-middleware-service.mjs",
-    "start-ws-service": "bin/start-ws-service.mjs",
-    "start-service": "bin/start-service.mjs"
-  },
   "scripts": {
     "end": ""
   },
-  "author": "Atsushi Oka (Kombucha.js)",
+  "author": "Atsushi Oka",
   "license": "ISC",
   "dependencies": {
     "ws": "^8.13.0"
